@@ -15,19 +15,23 @@ import android.widget.TextView;
 
 import com.example.trobamot.R;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class MainActivity extends AppCompatActivity {
     //diccionari = mapping???
     // lletres teclat = array mapping???
 
-    public Context getContextExecucio(){
+    public MainActivity getContextExecucio(){
         return this;
     }
-    public MainActivity esto = this;
+    private MainActivity instancia = this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        new PantallaPrincipal(this);
+        new PantallaPrincipal(this, new Diccionari(new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.paraules)))));
     }
 
     @Override

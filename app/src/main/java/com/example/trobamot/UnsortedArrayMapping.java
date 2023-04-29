@@ -18,16 +18,25 @@ package com.example.trobamot;
             while (i < n && !trobat) {
                 trobat = claus[i++].equals(key);
             }
-            if(!trobat) return null;
-            return valors[i-1];
+            return !trobat ? null : valors[i - 1];
+        }
+
+        /**
+         * Es pot fer aquesta implementació???
+         * @param key
+         * @param pos
+         * @return
+         */
+        public V get(K key, int pos){
+            return (pos < 0 || pos >= claus.length) ? null : valors[pos];
         }
 
         public boolean put(K key, V value) {
             if (isFull() || get(key) != null) {
                 return false;
             }
-            valors[n++] = value;
-            claus[n] = key;
+            valors[n] = value;
+            claus[n++] = key;
             return true;
         }
 
