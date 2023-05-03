@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -25,15 +26,18 @@ public class PantallaPrincipal {
 
     // instància de l'execució
     private AppCompatActivity context;
-
-    private int widthDisplay, heightDisplay, intentActual, lletraActual;
-
+    /**
+     * Mapping de posicions de paraula relacionades amb la lletra
+     */
+    private UnsortedArrayMapping<Integer, Character> uam;
+    private int widthDisplay, heightDisplay, intentActual, lletraActual, solucions;
+    private TextView textViewInformatiu;
     // Variables de lògica del joc
     private static final int lengthWord = 5, maxTry = 6;
     private final int NUM_PARAULES;
 
     private final static String grayColor = "#D9E1E8", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
-    private String paraulaRaw;
+    private String paraula, paraulaBenEscsrita;
     public PantallaPrincipal(AppCompatActivity context, Diccionari dic){
         // Object to store display information
         DisplayMetrics metrics = new DisplayMetrics();
@@ -45,11 +49,13 @@ public class PantallaPrincipal {
         this.context = context;
         lletraActual = 0;
         intentActual = 0;
-        paraulaRaw = crearParaula(new Random().nextInt());
+        String paraulaRaw = crearParaula(new Random().nextInt());
+        paraula = paraulaRaw.substring(0, paraulaRaw.length()/2);
+        paraulaBenEscsrita = paraulaRaw.substring((paraulaRaw.length()/2)+1);
         crearGraella();
+        crearTextInformatiu();
         crearTeclat();
         NUM_PARAULES = dic.getNumParaules();
-        
     }
 
     private void crearGraella() {
@@ -66,32 +72,31 @@ public class PantallaPrincipal {
                 constraintLayout.addView(new Casella(context, i, j, gd, widthDisplay/(lengthWord+2)));
             }
         }
+    }
 
+    private void crearTextInformatiu(){
+        textViewInformatiu = new TextView(context);
+        // Definir el textview
+        textViewInformatiu.setText("Hi ha "+solucions+" solucions posibles.");
+        textViewInformatiu.setTextSize(widthDisplay/50);
+        // Posicionam el textview
+        textViewInformatiu.setX((widthDisplay/2)-textViewInformatiu.getTextSize()/2);
+        textViewInformatiu.setY(((1+maxTry)*widthDisplay/(lengthWord+2))+(widthDisplay/(2*(lengthWord+2))));
+        ((ConstraintLayout)context.findViewById(R.id.layout)).addView(textViewInformatiu);
     }
 
     private void crearTeclat() {
         ConstraintLayout constraintLayout = context.findViewById(R.id.layout);
-        int files = 3;
-        int offsetLletra = 8;
-        int espaiOcupatPerLletra = widthDisplay/(ALFABET.length()/files);
-        int tamanyLletra = espaiOcupatPerLletra - 2 * offsetLletra;
-        boolean lletresOcupades[] = new boolean[paraulaRaw.length()/2];
-        UnsortedArrayMapping<Character, Integer> uam = new UnsortedArrayMapping<>(ALFABET.length());
+        int files = 3, offsetLletra = 8,
+                espaiOcupatPerLletra = widthDisplay/(ALFABET.length()/files),
+                tamanyLletra = espaiOcupatPerLletra - 2 * offsetLletra;
+        uam = new UnsortedArrayMapping<>(lengthWord);
+        for (int pos = 0; pos < lengthWord; pos++) {
+            uam.put(pos, paraula.charAt(pos));
+        }
         for (int i = 0; i < files; i++) {
             for (int j = 0; j < ALFABET.length()/files; j++) {
                 char lletra = ALFABET.charAt(i * (ALFABET.length()/files) + j);
-                boolean lletraEnParaula = false;
-                for (int pos = 0; pos < paraulaRaw.length()/2; pos++) {
-                    if (!lletresOcupades[pos] && Character.toLowerCase(paraulaRaw.charAt(pos)) == Character.toLowerCase(lletra)){
-                        lletresOcupades[pos] = true;
-                        lletraEnParaula = true;
-                        uam.put(lletra, pos);
-                        break;
-                    }
-                }
-                if (!lletraEnParaula){
-                    uam.put(lletra, null);
-                }
                 Button button = new Button(context);
                 button.setText(lletra + "");
                 // Tamany dels botons
@@ -153,17 +158,51 @@ public class PantallaPrincipal {
     }
 
     private void comprobarParaula(){
-        lletraActual = 0;
-        intentActual++;
-        String s = "";
+        String paraulaEscrita = "";
         for (int i = 0; i < lengthWord; i++) {
-            s += Casella.getCasella(context, intentActual, i);
+            paraulaEscrita += Casella.getCasella(context, intentActual, i);
         }
-        if ((s.toLowerCase()).compareTo((paraulaRaw.substring(0,paraulaRaw.length()/2)).toLowerCase()) == 0){
-            System.out.println("ganaste");
-        }else if(intentActual >= maxTry){
-            System.out.println("perdiste: "+paraulaRaw.substring(0,paraulaRaw.length()/2));
+        if (lletraActual < lengthWord){ // paraula incompleta
+            missatgeError("Paraula incompleta!");
+            return;
+        } else if (paraulaEscrita.compareToIgnoreCase(paraula) == 0){ // ha guanyat
+            new PantallaFinal(context, true, paraulaBenEscsrita);
+            return;
+        } else if (!existeixParaula(paraulaEscrita)){ // es comprova si forma part del catàleg
+            missatgeError("Paraula no vàlida!");
+            return;
         }
+        if(intentActual+1 >= maxTry){ // si no té més oportunitats ha perdut
+            new PantallaFinal(context, false, paraulaBenEscsrita);
+            return;
+        }
+        for (int i = 0; i < paraulaEscrita.length(); i++) { // recòrrer la paraula escrita
+            boolean coloretjat = false;
+            char lletraParaula = Character.toLowerCase(paraulaEscrita.charAt(i));
+            Casella c = Casella.getCasella(context, intentActual, i);
+            if (Character.toLowerCase(uam.get(i)) == lletraParaula){
+                c.setBackgroundColor(Color.GREEN);
+                coloretjat = true;
+            }else{
+                for (int pos = 0; pos < lengthWord; pos++) { // recòrrer uam
+                    if (Character.toLowerCase(uam.get(pos)) == lletraParaula){
+                        Casella groga = Casella.getCasella(context, intentActual, pos);
+                        groga.setBackgroundColor(Color.YELLOW);
+                        coloretjat = true;
+                        break;
+                    }
+                }
+            }
+            if (!coloretjat){
+                c.setBackgroundColor(Color.RED);
+            }
+        }
+        lletraActual = 0; // torna a començar a escriure per la següent fila
+        intentActual++; // si la paraula ha estat vàlida es té en compte aquest intent
+    }
+
+    private boolean existeixParaula(String s){
+        return true;
     }
 
     private String crearParaula(int seed){
@@ -198,7 +237,11 @@ public class PantallaPrincipal {
         return paraulaRaw;
 
          */
-        return "canya;canya";
+        return "pasta;pasta";
+    }
+
+    private void missatgeError(String text){
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 
     public static int getLongitudParaula() {
