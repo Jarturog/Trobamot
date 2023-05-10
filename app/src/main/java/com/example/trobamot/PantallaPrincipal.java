@@ -146,6 +146,7 @@ public class PantallaPrincipal {
 
     private void llevarLletra(){
         if (lletraActual <= 0){
+            missatgeError("No es pot esborrar lletres si no n'hi ha!");
             return;
         }
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
@@ -158,6 +159,7 @@ public class PantallaPrincipal {
 
     private void escriureLletra(char c){
         if (lletraActual >= lengthWord){
+            missatgeError("Envia per provar altres lletres!");
             return;
         }
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
@@ -201,20 +203,19 @@ public class PantallaPrincipal {
             char lletraParaula = Character.toLowerCase(paraulaEscrita.charAt(i));
             Casella c = Casella.getCasella(context, intentActual, i);
             if (Character.toLowerCase(uam.get(i)) == lletraParaula){
-                c.setBackgroundColor(Color.GREEN);
+                c.setBackgroundColor(Color.parseColor(greenColor));
                 coloretjat = true;
             }else{
                 for (int pos = 0; pos < lengthWord; pos++) { // recòrrer uam
                     if (Character.toLowerCase(uam.get(pos)) == lletraParaula){
-                        Casella groga = Casella.getCasella(context, intentActual, pos);
-                        groga.setBackgroundColor(Color.YELLOW);
+                        c.setBackgroundColor(Color.parseColor(orangeColor));
                         coloretjat = true;
                         break;
                     }
                 }
             }
             if (!coloretjat){
-                c.setBackgroundColor(Color.RED);
+                c.setBackgroundColor(Color.parseColor(redColor));
             }
         }
         lletraActual = 0; // torna a començar a escriure per la següent fila
