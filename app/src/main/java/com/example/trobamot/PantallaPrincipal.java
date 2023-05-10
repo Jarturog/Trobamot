@@ -163,8 +163,10 @@ public class PantallaPrincipal {
         casella.setText(c + "");
         casella.setBackground(getPinzell(false));
         lletraActual++;
-        casella = Casella.getCasella(context, intentActual, lletraActual);
-        casella.setBackground(getPinzell(true));
+        if (!(lletraActual >= lengthWord && intentActual >= maxTry)){ // si última casilla no pinto la siguiente
+            casella = Casella.getCasella(context, intentActual, lletraActual);
+            casella.setBackground(getPinzell(true));
+        }
     }
 
     private GradientDrawable getPinzell(boolean nouPunter){
@@ -189,7 +191,7 @@ public class PantallaPrincipal {
             missatgeError("Paraula no vàlida!");
             return;
         }
-        if(intentActual+1 >= maxTry){ // si no té més oportunitats ha perdut
+        if(intentActual >= maxTry){ // si no té més oportunitats ha perdut
             new PantallaFinal(context, false, paraulaBenEscsrita);
             return;
         }
