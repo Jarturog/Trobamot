@@ -119,19 +119,22 @@ public class PantallaPrincipal {
         buttonEsborrar.setText("Esborrar");
         buttonEnviar.setText("Enviar");
         // Tamany dels botons
-        int buttonWidth = 400, buttonHeight = 200;
-        ConstraintLayout.LayoutParams paramsBoto = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
-        paramsBoto.height = buttonHeight;
-        paramsBoto.width = buttonWidth;
-        buttonEsborrar.setLayoutParams(paramsBoto);
-        buttonEnviar.setLayoutParams(paramsBoto);
-        // Posicionar els botons
-        int offset = 16;
-        buttonEnviar.setX(widthDisplay/2 + offset);
-        buttonEnviar.setY(heightDisplay - files * espaiOcupatPerLletra - 2*offset - buttonHeight);
-        buttonEsborrar.setX(widthDisplay/2 - (offset + buttonWidth));
-        buttonEsborrar.setY(heightDisplay - files * espaiOcupatPerLletra - 2*offset - buttonHeight);
-        // Afegir el botó al layout
+        int buttonWidth = 400;
+        int buttonHeight = 200;
+        ConstraintLayout.LayoutParams paramsEsborrar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        paramsEsborrar.height = buttonHeight;
+        paramsEsborrar.width = buttonWidth;
+        buttonEsborrar.setLayoutParams(paramsEsborrar);
+        buttonEsborrar.setY(heightDisplay - buttonHeight - 400);
+        buttonEsborrar.setX(widthDisplay/5 - buttonWidth/5);
+
+        ConstraintLayout.LayoutParams paramsEnviar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        paramsEnviar.height = buttonHeight;
+        paramsEnviar.width = buttonWidth;
+        buttonEnviar.setLayoutParams(paramsEnviar);
+        buttonEnviar.setY(heightDisplay - buttonHeight - 400);
+        buttonEnviar.setX(3*widthDisplay/5 - buttonWidth/5);
+
         constraintLayout.addView(buttonEsborrar);
         constraintLayout.addView(buttonEnviar);
         // Afegir la funcionalitat al botó
