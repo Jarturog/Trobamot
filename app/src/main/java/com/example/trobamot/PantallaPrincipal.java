@@ -87,7 +87,7 @@ public class PantallaPrincipal {
 
     private void crearTeclat() {
         ConstraintLayout constraintLayout = context.findViewById(R.id.layout);
-        int files = 3, offsetLletra = 8,
+        int files = 3, offsetLletra = 0,
                 espaiOcupatPerLletra = widthDisplay/(ALFABET.length()/files),
                 tamanyLletra = espaiOcupatPerLletra - 2 * offsetLletra;
         uam = new UnsortedArrayMapping<>(lengthWord);
