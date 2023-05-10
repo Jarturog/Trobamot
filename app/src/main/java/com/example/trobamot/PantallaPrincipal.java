@@ -78,9 +78,10 @@ public class PantallaPrincipal {
         textViewInformatiu = new TextView(context);
         // Definir el textview
         textViewInformatiu.setText("Hi ha "+solucions+" solucions posibles.");
-        textViewInformatiu.setTextSize(widthDisplay/50);
+        int tamanyText = widthDisplay/50;
+        textViewInformatiu.setTextSize(tamanyText);
         // Posicionam el textview
-        textViewInformatiu.setX((widthDisplay/2)-textViewInformatiu.getTextSize()/2);
+        textViewInformatiu.setX((widthDisplay/2)-tamanyText*textViewInformatiu.getText().length()/2);
         textViewInformatiu.setY(((1+maxTry)*widthDisplay/(lengthWord+2))+(widthDisplay/(2*(lengthWord+2))));
         ((ConstraintLayout)context.findViewById(R.id.layout)).addView(textViewInformatiu);
     }
@@ -157,7 +158,13 @@ public class PantallaPrincipal {
         }
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
         casella.setText(c + "");
+        //casella.
         lletraActual++;
+    }
+
+    private void actualitzarPunter(){
+        Casella c = Casella.getCasella(context, intentActual, lletraActual);
+        //c.
     }
 
     private void comprobarParaula(){
