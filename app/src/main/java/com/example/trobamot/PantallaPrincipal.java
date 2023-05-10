@@ -36,7 +36,7 @@ public class PantallaPrincipal {
     private static final int lengthWord = 5, maxTry = 6;
     private final int NUM_PARAULES;
 
-    private final static String grayColor = "#D9E1E8", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
+    private final static String grayColor = "#D9E1E8", yellowColor = "#E5E500", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
     private String paraula, paraulaBenEscsrita;
     public PantallaPrincipal(AppCompatActivity context, Diccionari dic){
         // Object to store display information
@@ -61,9 +61,7 @@ public class PantallaPrincipal {
     private void crearGraella() {
         ConstraintLayout constraintLayout = context.findViewById(R.id.layout);
         // Definir les característiques del "pinzell"
-        GradientDrawable gd = new GradientDrawable();
-        gd.setCornerRadius(5);
-        gd.setStroke(3, Color.parseColor(grayColor));
+        GradientDrawable gd = getPinzell(false);
         // crear totes les caselles
         for (int i = 0; i < maxTry; i++) {
             for (int j = 0; j < lengthWord; j++) {
@@ -72,6 +70,8 @@ public class PantallaPrincipal {
                 constraintLayout.addView(new Casella(context, i, j, gd, widthDisplay/(lengthWord+2)));
             }
         }
+        Casella c = Casella.getCasella(context, 0, 0);
+        c.setBackground(getPinzell(true));
     }
 
     private void crearTextInformatiu(){
@@ -147,9 +147,12 @@ public class PantallaPrincipal {
         if (lletraActual <= 0){
             return;
         }
-        lletraActual--;
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
+        casella.setBackground(getPinzell(false));
+        lletraActual--;
+        casella = Casella.getCasella(context, intentActual, lletraActual);
         casella.setText("");
+        casella.setBackground(getPinzell(true));
     }
 
     private void escriureLletra(char c){
@@ -158,13 +161,17 @@ public class PantallaPrincipal {
         }
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
         casella.setText(c + "");
-        //casella.
+        casella.setBackground(getPinzell(false));
         lletraActual++;
+        casella = Casella.getCasella(context, intentActual, lletraActual);
+        casella.setBackground(getPinzell(true));
     }
 
-    private void actualitzarPunter(){
-        Casella c = Casella.getCasella(context, intentActual, lletraActual);
-        //c.
+    private GradientDrawable getPinzell(boolean nouPunter){
+        GradientDrawable gd = new GradientDrawable();
+        gd.setCornerRadius(5);
+        gd.setStroke(3, Color.parseColor(nouPunter ? yellowColor : grayColor));
+        return gd;
     }
 
     private void comprobarParaula(){
