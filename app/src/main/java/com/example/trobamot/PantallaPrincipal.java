@@ -36,7 +36,8 @@ public class PantallaPrincipal {
     private static final int lengthWord = 5, maxTry = 6;
     private final int NUM_PARAULES;
 
-    private final static String grayColor = "#D9E1E8", yellowColor = "#E5E500", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
+    private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "CC0000",
+             greenColor = "38761D", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
     private String paraula, paraulaBenEscsrita;
     public PantallaPrincipal(AppCompatActivity context, Diccionari dic){
         // Object to store display information
@@ -170,7 +171,7 @@ public class PantallaPrincipal {
     private GradientDrawable getPinzell(boolean nouPunter){
         GradientDrawable gd = new GradientDrawable();
         gd.setCornerRadius(5);
-        gd.setStroke(3, Color.parseColor(nouPunter ? yellowColor : grayColor));
+        gd.setStroke(3, Color.parseColor(nouPunter ? orangeColor : grayColor));
         return gd;
     }
 

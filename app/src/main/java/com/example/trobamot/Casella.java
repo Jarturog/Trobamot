@@ -25,7 +25,7 @@ public class Casella extends androidx.appcompat.widget.AppCompatTextView {
         setX(espaiOcupat + columna * (espaiOcupat));
         setY(espaiOcupat + fila * (espaiOcupat));
         setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
-        setTextColor(Color.RED);
+        setTextColor(Color.BLACK);
         setTextSize(textViewSize / 5);
     }
 
