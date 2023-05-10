@@ -119,6 +119,7 @@ public class PantallaPrincipal {
         buttonEsborrar.setText("Esborrar");
         buttonEnviar.setText("Enviar");
         // Tamany dels botons
+<<<<<<< HEAD
         int buttonWidth = 400;
         int buttonHeight = 200;
         ConstraintLayout.LayoutParams paramsEsborrar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
@@ -135,6 +136,24 @@ public class PantallaPrincipal {
         buttonEnviar.setY(heightDisplay - buttonHeight - 400);
         buttonEnviar.setX(3*widthDisplay/5 - buttonWidth/5);
 
+=======
+        int buttonWidth = 400, buttonHeight = 200;
+        ConstraintLayout.LayoutParams paramsBotoEnviar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        paramsBotoEnviar.height = buttonHeight;
+        paramsBotoEnviar.width = buttonWidth;
+        buttonEnviar.setLayoutParams(paramsBotoEnviar);
+        ConstraintLayout.LayoutParams paramsBotoEsborrar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        paramsBotoEsborrar.height = buttonHeight;
+        paramsBotoEsborrar.width = buttonWidth;
+        buttonEsborrar.setLayoutParams(paramsBotoEsborrar);
+        // Posicionar els botons
+        int offset = 16;
+        buttonEnviar.setX(widthDisplay/2 + offset);
+        buttonEnviar.setY(heightDisplay - files * espaiOcupatPerLletra - 2*offset - buttonHeight);
+        buttonEsborrar.setX(widthDisplay/2 - (offset + buttonWidth));
+        buttonEsborrar.setY(heightDisplay - files * espaiOcupatPerLletra - 2*offset - buttonHeight);
+        // Afegir el botó al layout
+>>>>>>> 3772717e80bf77bbd9d2b114218002f2730c9008
         constraintLayout.addView(buttonEsborrar);
         constraintLayout.addView(buttonEnviar);
         // Afegir la funcionalitat al botó
