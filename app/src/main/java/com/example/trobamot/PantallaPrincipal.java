@@ -120,11 +120,14 @@ public class PantallaPrincipal {
         buttonEnviar.setText("Enviar");
         // Tamany dels botons
         int buttonWidth = 400, buttonHeight = 200;
-        ConstraintLayout.LayoutParams paramsBoto = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
-        paramsBoto.height = buttonHeight;
-        paramsBoto.width = buttonWidth;
-        buttonEsborrar.setLayoutParams(paramsBoto);
-        buttonEnviar.setLayoutParams(paramsBoto);
+        ConstraintLayout.LayoutParams paramsBotoEnviar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        paramsBotoEnviar.height = buttonHeight;
+        paramsBotoEnviar.width = buttonWidth;
+        buttonEnviar.setLayoutParams(paramsBotoEnviar);
+        ConstraintLayout.LayoutParams paramsBotoEsborrar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
+        paramsBotoEsborrar.height = buttonHeight;
+        paramsBotoEsborrar.width = buttonWidth;
+        buttonEsborrar.setLayoutParams(paramsBotoEsborrar);
         // Posicionar els botons
         int offset = 16;
         buttonEnviar.setX(widthDisplay/2 + offset);
