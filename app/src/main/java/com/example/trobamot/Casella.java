@@ -17,7 +17,6 @@ public class Casella extends androidx.appcompat.widget.AppCompatTextView {
         int espaiOcupat = textViewSize;
         textViewSize -= OFFSET; // para dejar espacio entre casillas
         // Definir la casella
-        setText(String.valueOf(columna + fila * 6)); // CAMBIAR LUEGO
         setBackground(gd);
         setId(getIdCasella(fila, columna));
         setWidth(textViewSize);
