@@ -41,4 +41,8 @@ public class Casella extends androidx.appcompat.widget.AppCompatTextView {
     public String toString(){
         return this.getText().toString();
     }
+
+    public static int getBEGIN_IDs_CASELLAS(){
+        return BEGIN_IDs_CASELLAS;
+    }
 }

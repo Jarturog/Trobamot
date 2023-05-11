@@ -36,8 +36,8 @@ public class PantallaPrincipal {
     private static final int lengthWord = 5, maxTry = 6;
     private final int NUM_PARAULES;
 
-    private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "CC0000",
-             greenColor = "38761D", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
+    private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
+             greenColor = "#38761D", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
     private String paraula, paraulaBenEscsrita;
     public PantallaPrincipal(AppCompatActivity context, Diccionari dic){
         // Object to store display information
@@ -198,23 +198,26 @@ public class PantallaPrincipal {
             new PantallaFinal(context, false, paraulaBenEscsrita);
             return;
         }
+        boolean coloretjat[] = new boolean[lengthWord];
         for (int i = 0; i < paraulaEscrita.length(); i++) { // recòrrer la paraula escrita
-            boolean coloretjat = false;
-            char lletraParaula = Character.toLowerCase(paraulaEscrita.charAt(i));
+            char lletraParaulaEscrita = Character.toLowerCase(paraulaEscrita.charAt(i));
+            char lletraParaulaEsbrinar = Character.toLowerCase(uam.get(i));
             Casella c = Casella.getCasella(context, intentActual, i);
-            if (Character.toLowerCase(uam.get(i)) == lletraParaula){
+            if (lletraParaulaEsbrinar == lletraParaulaEscrita){
                 c.setBackgroundColor(Color.parseColor(greenColor));
-                coloretjat = true;
-            }else{
-                for (int pos = 0; pos < lengthWord; pos++) { // recòrrer uam
-                    if (Character.toLowerCase(uam.get(pos)) == lletraParaula){
-                        c.setBackgroundColor(Color.parseColor(orangeColor));
-                        coloretjat = true;
-                        break;
-                    }
+                continue;
+            }
+            boolean dinsParaula = false;
+            for (int pos = 0; pos < lengthWord; pos++) { // recòrrer uam
+                lletraParaulaEsbrinar = Character.toLowerCase(uam.get(pos));
+                if (lletraParaulaEsbrinar == lletraParaulaEscrita){
+                    c.setBackgroundColor(Color.parseColor(orangeColor));
+                    
+                    dinsParaula = true;
+                    break;
                 }
             }
-            if (!coloretjat){
+            if (!dinsParaula){
                 c.setBackgroundColor(Color.parseColor(redColor));
             }
         }
