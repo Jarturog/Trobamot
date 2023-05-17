@@ -1,6 +1,7 @@
 package com.example.trobamot;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.util.DisplayMetrics;
@@ -33,8 +34,9 @@ public class PantallaPrincipal {
     private int widthDisplay, heightDisplay, intentActual, lletraActual, solucions;
     private TextView textViewInformatiu;
     // Variables de lògica del joc
-    private static final int lengthWord = 5, maxTry = 6;
+    private static int lengthWord = 5, maxTry = 6;
     private final int NUM_PARAULES;
+    private int COLOR_DEFAULT_TECLA;
 
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
              greenColor = "#38761D", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -53,9 +55,14 @@ public class PantallaPrincipal {
         String paraulaRaw = crearParaula(new Random().nextInt());
         paraula = paraulaRaw.substring(0, paraulaRaw.length()/2);
         paraulaBenEscsrita = paraulaRaw.substring((paraulaRaw.length()/2)+1);
-        crearGraella();
-        crearTextInformatiu();
+        while (Casella.getBEGIN_IDs_CASELLAS() + maxTry * lengthWord >= ALFABET.charAt(0)) {
+            MainActivity.missatgeError(context, maxTry + " son massa intents.");
+            maxTry--;
+        }
         crearTeclat();
+        crearTextInformatiu();
+        crearGraella();
+
         NUM_PARAULES = dic.getNumParaules();
     }
 
@@ -100,6 +107,7 @@ public class PantallaPrincipal {
             for (int j = 0; j < ALFABET.length()/files; j++) {
                 char lletra = ALFABET.charAt(i * (ALFABET.length()/files) + j);
                 Button button = new Button(context);
+                button.setId(lletra);
                 button.setText(lletra + "");
                 // Tamany dels botons
                 ConstraintLayout.LayoutParams paramsBoto = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
@@ -142,11 +150,13 @@ public class PantallaPrincipal {
         // Afegir la funcionalitat al botó
         buttonEsborrar.setOnClickListener(v -> llevarLletra());
         buttonEnviar.setOnClickListener(v -> comprobarParaula());
+        // suponiendo que todos los botones se inicializan con el mismo color, cojo el color predeterminado
+        COLOR_DEFAULT_TECLA = buttonEsborrar.getCurrentTextColor();
     }
 
     private void llevarLletra(){
         if (lletraActual <= 0){
-            missatgeError("No es pot esborrar lletres si no n'hi ha!");
+            MainActivity.missatgeError(context, "No es pot esborrar lletres si no n'hi ha!");
             return;
         }
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
@@ -159,7 +169,7 @@ public class PantallaPrincipal {
 
     private void escriureLletra(char c){
         if (lletraActual >= lengthWord){
-            missatgeError("Envia per provar altres lletres!");
+            MainActivity.missatgeError(context, "Envia per provar altres lletres!");
             return;
         }
         Casella casella = Casella.getCasella(context, intentActual, lletraActual);
@@ -185,26 +195,38 @@ public class PantallaPrincipal {
             paraulaEscrita += Casella.getCasella(context, intentActual, i);
         }
         if (lletraActual < lengthWord){ // paraula incompleta
-            missatgeError("Paraula incompleta!");
+            MainActivity.missatgeError(context, "Paraula incompleta!");
             return;
         } else if (paraulaEscrita.compareToIgnoreCase(paraula) == 0){ // ha guanyat
-            new PantallaFinal(context, true, paraulaBenEscsrita);
+            Intent intent = new Intent(context, PantallaFinal.class);
+            intent.putExtra(MainActivity.MESSAGE_GUANYAT, true);
+            intent.putExtra(MainActivity.MESSAGE_PARAULA, paraulaBenEscsrita);
+            context.startActivity(intent);
             return;
         } else if (!existeixParaula(paraulaEscrita)){ // es comprova si forma part del catàleg
-            missatgeError("Paraula no vàlida!");
+            MainActivity.missatgeError(context, "Paraula no vàlida!");
             return;
         }
         if(intentActual >= maxTry){ // si no té més oportunitats ha perdut
-            new PantallaFinal(context, false, paraulaBenEscsrita);
+            Intent intent = new Intent(context, PantallaFinal.class);
+            intent.putExtra(MainActivity.MESSAGE_GUANYAT, false);
+            intent.putExtra(MainActivity.MESSAGE_PARAULA, paraulaBenEscsrita);
+            intent.putExtra(MainActivity.MESSAGE_RESTRICCIONS, "res"); // inacabado -----------------------------
+            intent.putExtra(MainActivity.MESSAGE_POSSIBILITATS, "pos");
+            context.startActivity(intent);
             return;
         }
-        boolean coloretjat[] = new boolean[lengthWord];
         for (int i = 0; i < paraulaEscrita.length(); i++) { // recòrrer la paraula escrita
             char lletraParaulaEscrita = Character.toLowerCase(paraulaEscrita.charAt(i));
             char lletraParaulaEsbrinar = Character.toLowerCase(uam.get(i));
             Casella c = Casella.getCasella(context, intentActual, i);
+            Button tecla = context.findViewById(lletraParaulaEscrita);
+            boolean teclaPintada = tecla.getCurrentTextColor() != COLOR_DEFAULT_TECLA;
             if (lletraParaulaEsbrinar == lletraParaulaEscrita){
                 c.setBackgroundColor(Color.parseColor(greenColor));
+                if (!teclaPintada) {
+                    tecla.setTextColor(Color.parseColor(greenColor));
+                }
                 continue;
             }
             boolean dinsParaula = false;
@@ -212,13 +234,18 @@ public class PantallaPrincipal {
                 lletraParaulaEsbrinar = Character.toLowerCase(uam.get(pos));
                 if (lletraParaulaEsbrinar == lletraParaulaEscrita){
                     c.setBackgroundColor(Color.parseColor(orangeColor));
-                    
+                    if (!teclaPintada) {
+                        tecla.setTextColor(Color.parseColor(orangeColor));
+                    }
                     dinsParaula = true;
                     break;
                 }
             }
             if (!dinsParaula){
                 c.setBackgroundColor(Color.parseColor(redColor));
+                if (!teclaPintada) {
+                    tecla.setTextColor(Color.parseColor(redColor));
+                }
             }
         }
         lletraActual = 0; // torna a començar a escriure per la següent fila
@@ -264,11 +291,8 @@ public class PantallaPrincipal {
         return "pasta;pasta";
     }
 
-    private void missatgeError(String text){
-        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-    }
-
-    public static int getLongitudParaula() {
+    public static int getLongitudParaula(){
         return lengthWord;
     }
+
 }

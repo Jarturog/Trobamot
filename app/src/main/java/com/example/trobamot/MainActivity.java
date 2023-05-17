@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.trobamot.R;
 
@@ -20,24 +21,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
-    //diccionari = mapping???
-    // lletres teclat = array mapping???
 
-    public MainActivity getContextExecucio(){
-        return this;
-    }
-    private MainActivity instancia = this;
+    public static final String MESSAGE_PARAULA = "com.example.trobamot.MainActivity.PARAULA";
+    public static final String MESSAGE_GUANYAT = "com.example.trobamot.MainActivity.GUANYAT";
+    public static final String MESSAGE_RESTRICCIONS = "com.example.trobamot.MainActivity.RESTRICCIONS";
+    public static final String MESSAGE_POSSIBILITATS = "com.example.trobamot.MainActivity.POSSIBILITATS";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        new PantallaPrincipal(this, new Diccionari(new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.paraules)))));
+    }
+
+    public static void missatgeError(Context context, String text){
+        Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         hideSystemUI();
+        new PantallaPrincipal(this, new Diccionari(new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.paraules)))));
     }
 
     private void hideSystemUI() {
