@@ -2,6 +2,8 @@ package com.example.trobamot;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,6 +23,7 @@ public class InternetDefinicioParaula {
         context = contextQueLiCrida;
     }
 
+    @Nullable
     private String agafaHTML() {
         try {
             URL definicio = new URL("https://www.vilaweb.cat/paraulogic/?diec="+ paraula);
@@ -39,19 +42,30 @@ public class InternetDefinicioParaula {
     }
 
     public String getDefinicio() {
-        AtomicReference<String> json = null;
-        new Thread(() -> json.set(agafaHTML()));
-        if (json.get() == null || json.get() == "") {
-            return "No s'ha trobat la definició";
-        }
+        String def [] = new String[1];
+        Thread thread = new Thread(() -> {
+            String json = agafaHTML();
+            if (json == null || json == "") {
+                def[0] = null;
+                return;
+            }
+            try {
+                JSONObject jObject = new JSONObject(json);
+                def[0] = jObject.getString("d");
+            } catch (JSONException e) {
+                def[0] = null;
+            }
+        });
+        thread.start();
         try {
-            JSONObject jObject = new JSONObject(json.get());
-            String def = jObject.getString("d");
-            return def;
-        } catch (JSONException e) {
-            MainActivity.missatgeError(context, "No s'ha pogut agafar la definició");
-            return null;
+            thread.join();
+        } catch (InterruptedException e) {
+            def[0] = null;
         }
+        if (def[0] == null) {
+            MainActivity.missatgeError(context, "No s'ha trobat la definició");
+        }
+        return def[0];
     }
 
 
