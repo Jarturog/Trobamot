@@ -4,9 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
+import android.icu.text.DateTimePatternGenerator;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.DisplayMetrics;
+import android.widget.ScrollView;
+import android.widget.Scroller;
 import android.widget.TextView;
 
 public class PantallaFinal extends AppCompatActivity {
@@ -54,15 +57,15 @@ public class PantallaFinal extends AppCompatActivity {
         TextView paraula = new TextView(this);
         titol.setText(sTitol);
         paraula.setText(paraulaCorrecta);
-        int tamanyTextTitol = widthDisplay/50;
-        int tamanyTextParaula = widthDisplay/100;
+        int tamanyTextTitol = widthDisplay/25;
+        int tamanyTextParaula = widthDisplay/400;
         titol.setTextSize(tamanyTextTitol);
         paraula.setTextSize(tamanyTextParaula);
         // Posicionam el textview
-        titol.setX(5);
-        titol.setY(5);
+        titol.setX(widthDisplay/4);
+        titol.setY(heightDisplay/16);
         paraula.setX(10);
-        paraula.setY(10);
+        paraula.setY(widthDisplay/10);
         constraintLayout.addView(titol);
         constraintLayout.addView(paraula);
     }
@@ -74,19 +77,24 @@ public class PantallaFinal extends AppCompatActivity {
         // Cream el textview i el definim
         TextView textView = new TextView(this);
         textView.setText(Html.fromHtml(definicio));
-        int tamanyText = widthDisplay/50;
+        int tamanyText = widthDisplay/70;
         textView.setTextSize(tamanyText);
+        ScrollView
+        textView.setScroller(scroll);
         // Posicionam el textview
-        int x = 5;
-        int y = 5;
+        int x = 20;
+        int y = widthDisplay/2;
         textView.setX(x);
         textView.setY(y);
+        textView.setWidth(widthDisplay -2*x);
+        textView.setHeight(heightDisplay-y- 2*x);
         constraintLayout.addView(textView);
     }
 
     private void crearTextRestriccions() {
 
     }
+
 
     private void crearTextParaulesPossibles() {
 
