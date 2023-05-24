@@ -40,6 +40,7 @@ public class PantallaFinal extends AppCompatActivity {
         crearTitol();
         crearTextDefinicio();
         if (!guanyat) {
+            // poner fondo gris
             crearTextRestriccions();
             crearTextParaulesPossibles();
         }
