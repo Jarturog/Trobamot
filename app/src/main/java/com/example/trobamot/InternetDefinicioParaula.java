@@ -36,7 +36,6 @@ public class InternetDefinicioParaula {
             }
             return sb.toString();
         } catch (IOException e) {
-            MainActivity.missatgeError(context, "No s'ha pogut agafar la definició");
             return null;
         }
     }
@@ -62,8 +61,8 @@ public class InternetDefinicioParaula {
         } catch (InterruptedException e) {
             def[0] = null;
         }
-        if (def[0] == null) {
-            MainActivity.missatgeError(context, "No s'ha trobat la definició");
+        if (def[0] == null || def[0] == "") {
+            def[0] = "No té definició";
         }
         return def[0];
     }
