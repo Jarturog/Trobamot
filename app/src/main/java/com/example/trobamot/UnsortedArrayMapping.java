@@ -1,6 +1,20 @@
 package com.example.trobamot;
 
-    public class UnsortedArrayMapping<K,V> {
+import androidx.annotation.NonNull;
+
+import org.jetbrains.annotations.Contract;
+
+import java.util.Iterator;
+
+public class UnsortedArrayMapping<K,V> {
+
+        protected class Pair {
+            private K key;
+            private V value;
+            private Pair(K key, V value) {this.key = key; this.value = value;}
+            public K getKey() {return key;}
+            public V getValue() {return value;}
+        }
 
         private final K[] claus;
         private final V[] valors;
@@ -19,16 +33,6 @@ package com.example.trobamot;
                 trobat = claus[i++].equals(key);
             }
             return !trobat ? null : valors[i - 1];
-        }
-
-        /**
-         * Es pot fer aquesta implementació???
-         * @param key
-         * @param pos
-         * @return
-         */
-        public V get(K key, int pos){
-            return (pos < 0 || pos >= claus.length) ? null : valors[pos];
         }
 
         public boolean put(K key, V value) {
@@ -64,5 +68,25 @@ package com.example.trobamot;
             return n >= valors.length;
         }
 
+        public Iterator iterator(){
+            return new IteratorUnsortedLinkedListMapping();
+        }
+
+        private class IteratorUnsortedLinkedListMapping implements Iterator {
+            private int i;
+            private IteratorUnsortedLinkedListMapping () {
+                i = 0;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return i < n;
+            }
+
+            @Override
+            public Object next() {
+                return new Pair(claus[i], valors[i++]);
+            }
+        }
     }
 
