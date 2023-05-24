@@ -36,7 +36,7 @@ public class PantallaPrincipal {
     // Variables de lògica del joc
     private static int lengthWord = 5, maxTry = 6;
     private final int NUM_PARAULES;
-    private int COLOR_DEFAULT_TECLA;
+    private static final int COLOR_DEFAULT_TECLA = Color.BLACK;
 
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
              greenColor = "#38761D", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -107,8 +107,9 @@ public class PantallaPrincipal {
             for (int j = 0; j < ALFABET.length()/files; j++) {
                 char lletra = ALFABET.charAt(i * (ALFABET.length()/files) + j);
                 Button button = new Button(context);
-                button.setId(lletra);
+                button.setId(Character.toLowerCase(lletra));
                 button.setText(lletra + "");
+                button.setTextColor(COLOR_DEFAULT_TECLA);
                 // Tamany dels botons
                 ConstraintLayout.LayoutParams paramsBoto = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
                 paramsBoto.height = tamanyLletra;
@@ -150,8 +151,6 @@ public class PantallaPrincipal {
         // Afegir la funcionalitat al botó
         buttonEsborrar.setOnClickListener(v -> llevarLletra());
         buttonEnviar.setOnClickListener(v -> comprobarParaula());
-        // suponiendo que todos los botones se inicializan con el mismo color, cojo el color predeterminado
-        COLOR_DEFAULT_TECLA = buttonEsborrar.getCurrentTextColor();
     }
 
     private void llevarLletra(){
@@ -224,9 +223,7 @@ public class PantallaPrincipal {
             boolean teclaPintada = tecla.getCurrentTextColor() != COLOR_DEFAULT_TECLA;
             if (lletraParaulaEsbrinar == lletraParaulaEscrita){
                 c.setBackgroundColor(Color.parseColor(greenColor));
-                if (!teclaPintada) {
-                    tecla.setTextColor(Color.parseColor(greenColor));
-                }
+                tecla.setTextColor(Color.parseColor(greenColor));
                 continue;
             }
             boolean dinsParaula = false;

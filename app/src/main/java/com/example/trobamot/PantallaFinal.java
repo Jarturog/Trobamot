@@ -5,6 +5,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
@@ -72,7 +73,7 @@ public class PantallaFinal extends AppCompatActivity {
         String definicio = internet.getDefinicio();
         // Cream el textview i el definim
         TextView textView = new TextView(this);
-        textView.setText(definicio);
+        textView.setText(Html.fromHtml(definicio));
         int tamanyText = widthDisplay/50;
         textView.setTextSize(tamanyText);
         // Posicionam el textview
