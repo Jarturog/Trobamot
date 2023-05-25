@@ -4,16 +4,18 @@ import androidx.annotation.NonNull;
 
 import org.jetbrains.annotations.Contract;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 
-public class UnsortedArrayMapping<K,V> {
+public class UnsortedArrayMapping<K, V extends Comparable<V>> {
 
         protected class Pair {
             private K key;
-            private V value;
-            private Pair(K key, V value) {this.key = key; this.value = value;}
+            private V valor;
+            private Pair(K key, V valor) {this.key = key; this.valor = valor;}
             public K getKey() {return key;}
-            public V getValue() {return value;}
+            public V getValue() {return valor;}
         }
 
         private final K[] claus;
@@ -35,11 +37,11 @@ public class UnsortedArrayMapping<K,V> {
             return !trobat ? null : valors[i - 1];
         }
 
-        public boolean put(K key, V value) {
+        public boolean put(K key, V valor) {
             if (isFull() || get(key) != null) {
                 return false;
             }
-            valors[n] = value;
+            valors[n] = valor;
             claus[n++] = key;
             return true;
         }
@@ -95,8 +97,19 @@ public class UnsortedArrayMapping<K,V> {
             for (int i = 0; i < n; i++) {
                 arrayOrdenat[i] = new Pair(claus[i], valors[i]);
             }
-            throw new RuntimeException("me falta el fokin quicksort");
-            //return arrayOrdenat;
+            ComparadorDeValors c = new ComparadorDeValors();
+            Arrays.sort(arrayOrdenat, c);
+            return arrayOrdenat;
+        }
+
+        /**
+         * Comparator
+         */
+        private class ComparadorDeValors implements Comparator<Pair> {
+            @Override
+            public int compare(Pair p1, Pair p2) {
+                return p1.valor.compareTo(p2.valor);
+            }
         }
     }
 
