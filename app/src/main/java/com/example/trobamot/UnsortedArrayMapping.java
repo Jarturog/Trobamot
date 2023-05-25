@@ -88,5 +88,15 @@ public class UnsortedArrayMapping<K,V> {
                 return new Pair(claus[i], valors[i++]);
             }
         }
+
+        public Pair[] sorted() {
+            Pair arrayOrdenat [] = (Pair[]) new Object[n];
+            // quicksort
+            for (int i = 0; i < n; i++) {
+                arrayOrdenat[i] = new Pair(claus[i], valors[i]);
+            }
+            throw new RuntimeException("me falta el fokin quicksort");
+            //return arrayOrdenat;
+        }
     }
 

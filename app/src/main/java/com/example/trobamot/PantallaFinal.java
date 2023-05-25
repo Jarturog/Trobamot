@@ -80,15 +80,15 @@ public class PantallaFinal extends AppCompatActivity {
         textView.setText(Html.fromHtml(definicio));
         int tamanyText = widthDisplay/70;
         textView.setTextSize(tamanyText);
-        ScrollView
-        textView.setScroller(scroll);
+        //ScrollView
+        //textView.setScroller(scroll);
         // Posicionam el textview
         int x = 20;
         int y = widthDisplay/2;
         textView.setX(x);
         textView.setY(y);
-        textView.setWidth(widthDisplay -2*x);
-        textView.setHeight(heightDisplay-y- 2*x);
+        textView.setWidth(widthDisplay - 2 * x);
+        textView.setHeight(heightDisplay - y - 2 * x);
         constraintLayout.addView(textView);
     }
 

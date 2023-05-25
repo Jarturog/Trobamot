@@ -13,10 +13,14 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.TreeSet;
 
 public class PantallaPrincipal {
 
@@ -35,7 +39,7 @@ public class PantallaPrincipal {
     private static int lengthWord = 5, maxTry = 1;
     private static final int COLOR_DEFAULT_TECLA = Color.BLACK;
     private UnsortedArrayMapping<Integer, Character> pistesAcertades;
-    private UnsortedArraySet<Character> pistesQuasiAcertades, restriccions;
+    private TreeSet<Character> pistesQuasiAcertades, restriccions;
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
              greenColor = "#38761D", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
     private String paraula, paraulaBenEscrita;
@@ -233,12 +237,35 @@ public class PantallaPrincipal {
         } else if (!diccionariSolucions.contains(paraulaEscrita)){ // es comprova si forma part del catàleg
             MainActivity.missatgeError(context, "Paraula no vàlida!");
             return;
-        } else if (intentActual >= maxTry-1){ // si no té més oportunitats ha perdut
+        } else if (intentActual >= maxTry-1){ // si no té més oportunitats ha perdu
+            String sRestriccions = "", sPistesQuasiAcertades = "", sPistesAcertades = "";
+            UnsortedArrayMapping.Pair[] pistesAcertadesOrdenades = pistesAcertades.sorted();
+            for (int i = 0; i < pistesAcertadesOrdenades.length; i++) {
+                sPistesAcertades += pistesAcertadesOrdenades[i].getKey() + "" +pistesAcertadesOrdenades[i].getValue();
+            }
+            Iterator iterador = pistesQuasiAcertades.iterator();
+            while (iterador.hasNext()) {
+                sPistesQuasiAcertades += iterador.next();
+            }
+            iterador = restriccions.iterator();
+            while (iterador.hasNext()) {
+                sRestriccions += iterador.next();
+            }
+            PriorityQueue<String> heapPerOrdenar = new PriorityQueue<>();
+            iterador = diccionariSolucions.iterator();
+            while (iterador.hasNext()) {
+                heapPerOrdenar.add((String) iterador.next());
+            }
+            String possibilitats = "";
+            for (int i = 0; i < solucions; i++) {
+                possibilitats += heapPerOrdenar.poll() + ", ";
+            }
+            possibilitats = possibilitats.substring(0, possibilitats.length() - 2);
             Intent intent = new Intent(context, PantallaFinal.class);
             intent.putExtra(MainActivity.MESSAGE_GUANYAT, false);
             intent.putExtra(MainActivity.MESSAGE_PARAULA, paraulaBenEscrita);
-            intent.putExtra(MainActivity.MESSAGE_RESTRICCIONS, "res"); // inacabado -----------------------------
-            intent.putExtra(MainActivity.MESSAGE_POSSIBILITATS, "pos");
+            intent.putExtra(MainActivity.MESSAGE_RESTRICCIONS, sPistesAcertades + ";" + sPistesQuasiAcertades + ";" + sRestriccions);
+            intent.putExtra(MainActivity.MESSAGE_POSSIBILITATS, possibilitats);
             context.startActivity(intent);
             return;
         }
@@ -281,12 +308,13 @@ public class PantallaPrincipal {
         intentActual++; // si la paraula ha estat vàlida es té en compte aquest intent
     }
 
-    private void actualitzarSolucions(){
+    private void actualitzarSolucions() {
         Iterator iterador = diccionariSolucions.iterator();
         while (iterador.hasNext()) {
             String paraula = (String) iterador.next();
             if(!possibleSolucio(paraula)) {
                 diccionariSolucions.remove(paraula);
+                solucions--;
             }
         }
         textViewInformatiu.setText("Hi ha "+solucions+" solucions posibles.");
@@ -346,8 +374,8 @@ public class PantallaPrincipal {
             }
         }
         pistesAcertades = new UnsortedArrayMapping<>(lengthWord);
-        pistesQuasiAcertades = new UnsortedArraySet<>(lengthWord);
-        restriccions = new UnsortedArraySet<>(ALFABET.length() - lengthWord);
+        pistesQuasiAcertades = new TreeSet<>();//(lengthWord);
+        restriccions = new TreeSet<>();//(ALFABET.length() - lengthWord);
     }
 
     public static int getLongitudParaula(){
