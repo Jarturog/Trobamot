@@ -1,14 +1,10 @@
 package com.example.trobamot;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 public class MainActivity extends AppCompatActivity {
 

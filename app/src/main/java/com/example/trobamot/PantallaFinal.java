@@ -2,14 +2,15 @@ package com.example.trobamot;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-
 import android.content.Intent;
-import android.icu.text.DateTimePatternGenerator;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.method.ScrollingMovementMethod;
+import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
-import android.widget.ScrollView;
-import android.widget.Scroller;
 import android.widget.TextView;
 
 public class PantallaFinal extends AppCompatActivity {
@@ -19,6 +20,8 @@ public class PantallaFinal extends AppCompatActivity {
     private boolean guanyat;
     private int widthDisplay, heightDisplay;
     private ConstraintLayout constraintLayout;
+    private Intent intent;
+    private static final int MARGE = 20;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,11 +35,9 @@ public class PantallaFinal extends AppCompatActivity {
         widthDisplay = metrics.widthPixels;
         heightDisplay = metrics.heightPixels;
 
-        Intent intent = getIntent();
+        intent = getIntent();
         paraulaCorrecta = intent.getStringExtra(MainActivity.MESSAGE_PARAULA);
         guanyat = intent.getBooleanExtra(MainActivity.MESSAGE_GUANYAT, false);
-        String restriccions = intent.getStringExtra(MainActivity.MESSAGE_RESTRICCIONS);
-        String paraulesPossibles = intent.getStringExtra(MainActivity.MESSAGE_POSSIBILITATS);
         crearTitol();
         crearTextDefinicio();
         if (!guanyat) {
@@ -58,46 +59,78 @@ public class PantallaFinal extends AppCompatActivity {
         TextView paraula = new TextView(this);
         titol.setText(sTitol);
         paraula.setText(paraulaCorrecta);
-        int tamanyTextTitol = widthDisplay/25;
-        int tamanyTextParaula = widthDisplay/400;
+        int tamanyTextTitol = widthDisplay/24;
+        int tamanyTextParaula = widthDisplay/36;
         titol.setTextSize(tamanyTextTitol);
         paraula.setTextSize(tamanyTextParaula);
         // Posicionam el textview
-        titol.setX(widthDisplay/4);
-        titol.setY(heightDisplay/16);
-        paraula.setX(10);
-        paraula.setY(widthDisplay/10);
+        titol.setX((widthDisplay/2)-tamanyTextTitol*titol.getText().length()/2);
+        titol.setY(heightDisplay/20);
+        paraula.setX((widthDisplay/2)-tamanyTextParaula*paraula.getText().length()/2);
+        paraula.setY(heightDisplay/7);
+        titol.setTypeface(Typeface.DEFAULT_BOLD);
         constraintLayout.addView(titol);
         constraintLayout.addView(paraula);
     }
 
     private void crearTextDefinicio() {
         // Aconseguim la definició
-        InternetDefinicioParaula internet = new InternetDefinicioParaula(paraulaCorrecta, this);
+        InternetDefinicioParaula internet = new InternetDefinicioParaula(paraulaCorrecta);
         String definicio = internet.getDefinicio();
         // Cream el textview i el definim
         TextView textView = new TextView(this);
         textView.setText(Html.fromHtml(definicio));
         int tamanyText = widthDisplay/70;
         textView.setTextSize(tamanyText);
-        //ScrollView
-        //textView.setScroller(scroll);
+        textView.setMovementMethod(new ScrollingMovementMethod());
         // Posicionam el textview
-        int x = 20;
-        int y = widthDisplay/2;
+        int x = MARGE;
+        int y = heightDisplay/5;
         textView.setX(x);
         textView.setY(y);
-        textView.setWidth(widthDisplay - 2 * x);
-        textView.setHeight(heightDisplay - y - 2 * x);
+        textView.setWidth(widthDisplay - MARGE * 2);
+        textView.setHeight(heightDisplay * 3/4);
         constraintLayout.addView(textView);
     }
 
     private void crearTextRestriccions() {
-
+        String restriccions = intent.getStringExtra(MainActivity.MESSAGE_RESTRICCIONS);
+        String textRestriccions = "Restriccions: ";
+        SpannableString spannableString = new SpannableString(textRestriccions + restriccions);
+        spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, textRestriccions.length() - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        TextView textView = new TextView(this);
+        textView.setText(spannableString);
+        int tamanyText = widthDisplay/70;
+        textView.setTextSize(tamanyText);
+        textView.setMovementMethod(new ScrollingMovementMethod());
+        // Posicionam el textview
+        int x = MARGE;
+        int y = heightDisplay/2;
+        textView.setX(x);
+        textView.setY(y);
+        textView.setWidth(widthDisplay - MARGE * 2);
+        textView.setHeight(heightDisplay * 3/4);
+        constraintLayout.addView(textView);
     }
 
 
     private void crearTextParaulesPossibles() {
-
+        String paraulesPossibles = intent.getStringExtra(MainActivity.MESSAGE_POSSIBILITATS);
+        String partDestacada = "Paraules possibles: ";
+        TextView textView = new TextView(this);
+        SpannableString spannableString = new SpannableString(partDestacada + paraulesPossibles);
+        spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, partDestacada.length() - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        textView.setText(spannableString);
+        int tamanyText = widthDisplay/70;
+        textView.setTextSize(tamanyText);
+        textView.setMovementMethod(new ScrollingMovementMethod());
+        // Posicionam el textview
+        int x = MARGE;
+        int y = heightDisplay*5/8;
+        textView.setX(x);
+        textView.setY(y);
+        textView.setWidth(widthDisplay - MARGE * 2);
+        textView.setHeight(heightDisplay * 3/4);
+        constraintLayout.addView(textView);
     }
 }

@@ -1,29 +1,20 @@
 package com.example.trobamot;
 
-import android.content.Context;
-
-import androidx.annotation.Nullable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class InternetDefinicioParaula {
 
     private String paraula;
-    private Context context;
 
-    public InternetDefinicioParaula(String paraula, Context contextQueLiCrida) {
+    public InternetDefinicioParaula(String paraula) {
         this.paraula = paraula;
-        context = contextQueLiCrida;
     }
 
-    @Nullable
     private String agafaHTML() {
         try {
             URL definicio = new URL("https://www.vilaweb.cat/paraulogic/?diec="+ paraula);

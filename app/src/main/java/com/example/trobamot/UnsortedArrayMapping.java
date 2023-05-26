@@ -1,10 +1,6 @@
 package com.example.trobamot;
 
-import androidx.annotation.NonNull;
-
-import org.jetbrains.annotations.Contract;
-
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -25,7 +21,7 @@ public class UnsortedArrayMapping<K, V extends Comparable<V>> {
         public UnsortedArrayMapping(int max) {
             n = 0;
             claus = (K[]) new Object[max];
-            valors = (V[]) new Object[max];
+            valors = (V[]) new Comparable[max];
         }
 
         public V get(K key) {
@@ -91,25 +87,13 @@ public class UnsortedArrayMapping<K, V extends Comparable<V>> {
             }
         }
 
-        public Pair[] sorted() {
-            Pair arrayOrdenat [] = (Pair[]) new Object[n];
-            // quicksort
+        public Object[] sorted() {
+            ArrayList<Pair> a = new ArrayList<>(n);
             for (int i = 0; i < n; i++) {
-                arrayOrdenat[i] = new Pair(claus[i], valors[i]);
+                a.add(new Pair(claus[i], valors[i]));
             }
-            ComparadorDeValors c = new ComparadorDeValors();
-            Arrays.sort(arrayOrdenat, c);
-            return arrayOrdenat;
-        }
-
-        /**
-         * Comparator
-         */
-        private class ComparadorDeValors implements Comparator<Pair> {
-            @Override
-            public int compare(Pair p1, Pair p2) {
-                return p1.valor.compareTo(p2.valor);
-            }
+            a.sort(Comparator.comparing((Pair p) -> p.valor));
+            return a.toArray();
         }
     }
 

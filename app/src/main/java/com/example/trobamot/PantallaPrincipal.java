@@ -6,18 +6,14 @@ import android.graphics.drawable.GradientDrawable;
 import android.util.DisplayMetrics;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.TreeSet;
@@ -25,10 +21,8 @@ import java.util.TreeSet;
 public class PantallaPrincipal {
 
     // instància de l'execució
-    private AppCompatActivity context;
-    /**
-     * Mapping de posicions de paraula relacionades amb la lletra
-     */
+    private final AppCompatActivity context;
+    // Mapping de posicions de paraula relacionades amb la lletra
     private UnsortedArrayMapping<Integer, Character> paraulaAmbPosicionsLletres;
     private HashMap<String, String> diccionariComplet;
     private HashSet<String> diccionariSolucions;
@@ -36,7 +30,7 @@ public class PantallaPrincipal {
     private final int widthDisplay, heightDisplay;
     private TextView textViewInformatiu;
     // Variables de lògica del joc
-    private static int lengthWord = 5, maxTry = 1;
+    private static int lengthWord = 5, maxTry = 4;
     private static final int COLOR_DEFAULT_TECLA = Color.BLACK;
     private UnsortedArrayMapping<Integer, Character> pistesAcertades;
     private TreeSet<Character> pistesQuasiAcertades, restriccions;
@@ -71,7 +65,7 @@ public class PantallaPrincipal {
             diccionariSolucions = new HashSet<>();
             BufferedReader br = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(R.raw.paraules)));
             String linia = br.readLine();
-            while (linia != null && linia != "") {
+            while (linia != null && !linia.equals("")) {
                 String paraulaAmbAccents = "";
                 char lletra = linia.charAt(0);
                 for (int i = 0; lletra != ';' && i < lengthWord; i++) {
@@ -229,44 +223,13 @@ public class PantallaPrincipal {
             MainActivity.missatgeError(context, "Paraula incompleta!");
             return;
         } else if (paraulaEscrita.compareToIgnoreCase(paraula) == 0){ // ha guanyat
-            Intent intent = new Intent(context, PantallaFinal.class);
-            intent.putExtra(MainActivity.MESSAGE_GUANYAT, true);
-            intent.putExtra(MainActivity.MESSAGE_PARAULA, paraulaBenEscrita);
-            context.startActivity(intent);
+            context.startActivity(prepararSeguentPantalla(true));
             return;
-        } else if (!diccionariSolucions.contains(paraulaEscrita)){ // es comprova si forma part del catàleg
+        } else if (!diccionariComplet.containsKey(paraulaEscrita)){ // es comprova si forma part del catàleg
             MainActivity.missatgeError(context, "Paraula no vàlida!");
             return;
-        } else if (intentActual >= maxTry-1){ // si no té més oportunitats ha perdu
-            String sRestriccions = "", sPistesQuasiAcertades = "", sPistesAcertades = "";
-            UnsortedArrayMapping.Pair[] pistesAcertadesOrdenades = pistesAcertades.sorted();
-            for (int i = 0; i < pistesAcertadesOrdenades.length; i++) {
-                sPistesAcertades += pistesAcertadesOrdenades[i].getKey() + "" +pistesAcertadesOrdenades[i].getValue();
-            }
-            Iterator iterador = pistesQuasiAcertades.iterator();
-            while (iterador.hasNext()) {
-                sPistesQuasiAcertades += iterador.next();
-            }
-            iterador = restriccions.iterator();
-            while (iterador.hasNext()) {
-                sRestriccions += iterador.next();
-            }
-            PriorityQueue<String> heapPerOrdenar = new PriorityQueue<>();
-            iterador = diccionariSolucions.iterator();
-            while (iterador.hasNext()) {
-                heapPerOrdenar.add((String) iterador.next());
-            }
-            String possibilitats = "";
-            for (int i = 0; i < solucions; i++) {
-                possibilitats += heapPerOrdenar.poll() + ", ";
-            }
-            possibilitats = possibilitats.substring(0, possibilitats.length() - 2);
-            Intent intent = new Intent(context, PantallaFinal.class);
-            intent.putExtra(MainActivity.MESSAGE_GUANYAT, false);
-            intent.putExtra(MainActivity.MESSAGE_PARAULA, paraulaBenEscrita);
-            intent.putExtra(MainActivity.MESSAGE_RESTRICCIONS, sPistesAcertades + ";" + sPistesQuasiAcertades + ";" + sRestriccions);
-            intent.putExtra(MainActivity.MESSAGE_POSSIBILITATS, possibilitats);
-            context.startActivity(intent);
+        } else if (intentActual >= maxTry-1){ // si no té més oportunitats ha perdut
+            context.startActivity(prepararSeguentPantalla(false));
             return;
         }
         for (int i = 0; i < paraulaEscrita.length(); i++) { // recòrrer la paraula escrita
@@ -275,7 +238,7 @@ public class PantallaPrincipal {
             Casella c = Casella.getCasella(context, intentActual, i);
             Button tecla = context.findViewById(lletraParaulaEscrita);
             boolean teclaPintada = tecla.getCurrentTextColor() != COLOR_DEFAULT_TECLA;
-            if (lletraParaulaEsbrinar == lletraParaulaEscrita){
+            if (lletraParaulaEsbrinar == lletraParaulaEscrita) {
                 c.setBackgroundColor(Color.parseColor(greenColor));
                 tecla.setTextColor(Color.parseColor(greenColor));
                 pistesAcertades.put(i, lletraParaulaEscrita);
@@ -285,7 +248,7 @@ public class PantallaPrincipal {
             boolean dinsParaula = false;
             for (int pos = 0; pos < lengthWord; pos++) { // recòrrer paraulaAmbPosicionsLletres
                 lletraParaulaEsbrinar = Character.toLowerCase(paraulaAmbPosicionsLletres.get(pos));
-                if (lletraParaulaEsbrinar == lletraParaulaEscrita){
+                if (lletraParaulaEsbrinar == lletraParaulaEscrita) {
                     c.setBackgroundColor(Color.parseColor(orangeColor));
                     if (!teclaPintada) {
                         tecla.setTextColor(Color.parseColor(orangeColor));
@@ -295,7 +258,7 @@ public class PantallaPrincipal {
                     break;
                 }
             }
-            if (!dinsParaula){
+            if (!dinsParaula) {
                 c.setBackgroundColor(Color.parseColor(redColor));
                 if (!teclaPintada) {
                     tecla.setTextColor(Color.parseColor(redColor));
@@ -308,12 +271,56 @@ public class PantallaPrincipal {
         intentActual++; // si la paraula ha estat vàlida es té en compte aquest intent
     }
 
-    private void actualitzarSolucions() {
-        Iterator iterador = diccionariSolucions.iterator();
+    private Intent prepararSeguentPantalla(boolean guanyat) {
+        Intent intent = new Intent(context, PantallaFinal.class);
+        intent.putExtra(MainActivity.MESSAGE_GUANYAT, guanyat);
+        intent.putExtra(MainActivity.MESSAGE_PARAULA, paraulaBenEscrita);
+        if (guanyat) {
+            return intent;
+        }
+        // ENCERTS
+        String sRestriccions = "";
+        Object[] pistesAcertadesOrdenades = pistesAcertades.sorted();
+        for (int i = 0; i < pistesAcertadesOrdenades.length; i++) {
+            UnsortedArrayMapping.Pair element = (UnsortedArrayMapping.Pair)pistesAcertadesOrdenades[i];
+            sRestriccions += "ha de contenir la " + Character.toUpperCase((Character)element.getValue()) + " a la posició " + (((Integer)element.getKey())+1) + ", ";
+        }
+        // PISTES
+        Iterator<Character> iterador = pistesQuasiAcertades.iterator();
         while (iterador.hasNext()) {
-            String paraula = (String) iterador.next();
+            sRestriccions += "ha de contenir la " + Character.toUpperCase(iterador.next()) + " a qualque posició no descoberta, ";
+        }
+        // RESTRICCIONS
+        iterador = restriccions.iterator();
+        while (iterador.hasNext()) {
+            sRestriccions += "no ha de contenir la " + Character.toUpperCase(iterador.next()) + ", ";
+        }
+        if (sRestriccions.length() > 1) {
+            sRestriccions = sRestriccions.substring(0, sRestriccions.length() - 2) + ".";
+        } else {
+            sRestriccions = "No s'han descobert";
+        }
+        intent.putExtra(MainActivity.MESSAGE_RESTRICCIONS, sRestriccions);
+        // POSSIBILITATS
+        PriorityQueue<String> heapPerOrdenar = new PriorityQueue<>();
+        Iterator<String> iteradorSols = diccionariSolucions.iterator();
+        while (iteradorSols.hasNext()) {
+            heapPerOrdenar.add(iteradorSols.next());
+        }
+        String possibilitats = "";
+        while (!heapPerOrdenar.isEmpty()) {
+            possibilitats += heapPerOrdenar.poll() + ", ";
+        }
+        intent.putExtra(MainActivity.MESSAGE_POSSIBILITATS, possibilitats.substring(0, possibilitats.length() - 2) + ".");
+        return intent;
+    }
+
+    private void actualitzarSolucions() {
+        Iterator<String> iterador = diccionariSolucions.iterator();
+        while (iterador.hasNext()) {
+            String paraula = iterador.next();
             if(!possibleSolucio(paraula)) {
-                diccionariSolucions.remove(paraula);
+                iterador.remove();
                 solucions--;
             }
         }
@@ -321,16 +328,16 @@ public class PantallaPrincipal {
     }
 
     private boolean possibleSolucio(String s) {
-        Iterator iterador = pistesAcertades.iterator();
-        while (iterador.hasNext()) {
-            UnsortedArrayMapping.Pair element = (UnsortedArrayMapping.Pair)iterador.next();
+        Iterator<UnsortedArrayMapping.Pair> iteradorMapping = pistesAcertades.iterator();
+        while (iteradorMapping.hasNext()) {
+            UnsortedArrayMapping.Pair element = iteradorMapping.next();
             if (!pistesAcertades.get((int)element.getKey()).equals(s.charAt((int)element.getKey()))) {
                 return false;
             }
         } // si pasa el bucle es porque van bien las pistas verdes
-        iterador = pistesQuasiAcertades.iterator();
+        Iterator<Character> iterador = pistesQuasiAcertades.iterator();
         while (iterador.hasNext()) {
-            char lletra = (char)iterador.next();
+            char lletra = iterador.next();
             boolean trobat = false;
             for (int i = 0; i < s.length(); i++) {
                 if (lletra == s.charAt(i)) {
@@ -344,7 +351,7 @@ public class PantallaPrincipal {
         } // si pasa el bucle es porque van bien las pistas amarillas
         iterador = restriccions.iterator();
         while (iterador.hasNext()) {
-            char lletra = (char)iterador.next();
+            char lletra = iterador.next();
             boolean trobat = false;
             for (int i = 0; i < s.length(); i++) {
                 if (lletra == s.charAt(i)) {
@@ -364,14 +371,12 @@ public class PantallaPrincipal {
         int numIteracions = r.nextInt(numParaules);
         numIteracions++; // me aseguro de que haga una iteración al menos
         int iteracionsFetes = 0;
-        Iterator iterador = diccionariComplet.entrySet().iterator();
+        Iterator<HashMap.Entry<String, String>> iterador = diccionariComplet.entrySet().iterator();
         while (iterador.hasNext() && iteracionsFetes < numIteracions) {
-            HashMap.Entry element = (HashMap.Entry)iterador.next();
+            HashMap.Entry<String, String> element = iterador.next();
             iteracionsFetes++;
-            if (((String)element.getKey()).length() == lengthWord) {
-                paraula = (String) element.getKey();
-                paraulaBenEscrita = (String) element.getValue();
-            }
+            paraula = element.getKey();
+            paraulaBenEscrita = element.getValue();
         }
         pistesAcertades = new UnsortedArrayMapping<>(lengthWord);
         pistesQuasiAcertades = new TreeSet<>();//(lengthWord);

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
