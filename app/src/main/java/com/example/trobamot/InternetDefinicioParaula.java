@@ -74,6 +74,4 @@ public class InternetDefinicioParaula {
         }
         return def[0];
     }
-
-
 }

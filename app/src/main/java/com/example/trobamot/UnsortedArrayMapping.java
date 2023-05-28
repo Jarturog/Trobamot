@@ -104,8 +104,7 @@ public class UnsortedArrayMapping<K, V extends Comparable<V>> {
 
     /**
      * Retorna un array del mapping ordenat amb mergesort per valor.
-     * Ja sabem que és una mica de trampa fer aquest mètode però esperem que ens perdonis.
-     * Cost: O(nlogn), que com en aquest cas n és molt petit no hi ha problemes.
+     * Cost: O(nlogn), que com en aquest cas n és molt petit (lengthWord) no hi ha problemes.
      * @return array d'Object que en realitat són instàncies Pair ordenat per valor.
      * S'ha de fer casting de cada element.
      */
