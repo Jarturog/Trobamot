@@ -6,8 +6,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+/**
+ * On es comença a executar el projecte.
+ * @author Juan Arturo Abaurrea Calafell i Marta González Juan
+ */
 public class MainActivity extends AppCompatActivity {
 
+    // missatges
     public static final String MESSAGE_PARAULA = "com.example.trobamot.MainActivity.PARAULA";
     public static final String MESSAGE_GUANYAT = "com.example.trobamot.MainActivity.GUANYAT";
     public static final String MESSAGE_RESTRICCIONS = "com.example.trobamot.MainActivity.RESTRICCIONS";
@@ -19,6 +24,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
     }
 
+    /**
+     * Mostra un popup amb el text introduit
+     * @param context context on es vol mostrar
+     * @param text text que es vol mostrar
+     */
     public static void missatgeError(Context context, String text){
         Toast.makeText(context, text, Toast.LENGTH_LONG).show();
     }

@@ -13,20 +13,25 @@ import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
+/**
+ * Pantalla final resultant de perdre o guanyar.
+ * @author Juan Arturo Abaurrea Calafell i Marta González Juan
+ */
 public class PantallaFinal extends AppCompatActivity {
 
+    // missatges de perdre/guanyar
     private final static String TITOL_PERDRE = "Oh oh oh oh...", TITOL_GUANYAR = "Enhorabona!";
-    private String paraulaCorrecta;
-    private boolean guanyat;
-    private int widthDisplay, heightDisplay;
-    private ConstraintLayout constraintLayout;
-    private Intent intent;
-    private static final int MARGE = 20;
+    private String paraulaCorrecta; // paraula amb accents
+    private boolean guanyat; // true si ha guanyat, false si ha perdut
+    private int widthDisplay, heightDisplay; // dimensions del dispositiu
+    private ConstraintLayout constraintLayout; // constraintLayout on s'afegiran els TextView's
+    private Intent intent; // l'Intent amb el qual s'ha arribat a aquesta Activity
+    private static final int MARGE = 20; // el marge entre el text i les parets del dispositiu
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pantalla_final);
-
         constraintLayout = findViewById(R.id.layoutFinal);
         // Object to store display information
         DisplayMetrics metrics = new DisplayMetrics();
@@ -34,19 +39,23 @@ public class PantallaFinal extends AppCompatActivity {
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         widthDisplay = metrics.widthPixels;
         heightDisplay = metrics.heightPixels;
-
+        // s'agafa l'intent, la paraula i si ha guanyat o no
         intent = getIntent();
         paraulaCorrecta = intent.getStringExtra(MainActivity.MESSAGE_PARAULA);
         guanyat = intent.getBooleanExtra(MainActivity.MESSAGE_GUANYAT, false);
         crearTitol();
         crearTextDefinicio();
         if (!guanyat) {
-            // poner fondo gris
+            // S'estableix el fons gris i s'informa de les restriccions i les paraules possibles
+            getWindow().getDecorView().setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
             crearTextRestriccions();
             crearTextParaulesPossibles();
         }
     }
 
+    /**
+     * Crea la part superior de la pantalla final
+     */
     private void crearTitol() {
         String sTitol;
         if (guanyat) {
@@ -73,6 +82,9 @@ public class PantallaFinal extends AppCompatActivity {
         constraintLayout.addView(paraula);
     }
 
+    /**
+     * Crea el TextView corresponent a la definició de la paraula.
+     */
     private void crearTextDefinicio() {
         // Aconseguim la definició
         InternetDefinicioParaula internet = new InternetDefinicioParaula(paraulaCorrecta);
@@ -82,7 +94,7 @@ public class PantallaFinal extends AppCompatActivity {
         textView.setText(Html.fromHtml(definicio));
         int tamanyText = widthDisplay/70;
         textView.setTextSize(tamanyText);
-        textView.setMovementMethod(new ScrollingMovementMethod());
+        textView.setMovementMethod(new ScrollingMovementMethod()); // scroll
         // Posicionam el textview
         int x = MARGE;
         int y = heightDisplay/5;
@@ -93,16 +105,20 @@ public class PantallaFinal extends AppCompatActivity {
         constraintLayout.addView(textView);
     }
 
+    /**
+     * Crea el TextView corresponent a les restriccions de la paraula.
+     */
     private void crearTextRestriccions() {
         String restriccions = intent.getStringExtra(MainActivity.MESSAGE_RESTRICCIONS);
         String textRestriccions = "Restriccions: ";
         SpannableString spannableString = new SpannableString(textRestriccions + restriccions);
+        // es posa en negreta la primera paraula
         spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, textRestriccions.length() - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         TextView textView = new TextView(this);
         textView.setText(spannableString);
         int tamanyText = widthDisplay/70;
         textView.setTextSize(tamanyText);
-        textView.setMovementMethod(new ScrollingMovementMethod());
+        textView.setMovementMethod(new ScrollingMovementMethod()); // scroll
         // Posicionam el textview
         int x = MARGE;
         int y = heightDisplay/2;
@@ -113,17 +129,20 @@ public class PantallaFinal extends AppCompatActivity {
         constraintLayout.addView(textView);
     }
 
-
+    /**
+     * Crea el TextView corresponent a les paraules possibles que depenen de les restriccions.
+     */
     private void crearTextParaulesPossibles() {
         String paraulesPossibles = intent.getStringExtra(MainActivity.MESSAGE_POSSIBILITATS);
         String partDestacada = "Paraules possibles: ";
         TextView textView = new TextView(this);
         SpannableString spannableString = new SpannableString(partDestacada + paraulesPossibles);
+        // es posa en negreta la primera paraula
         spannableString.setSpan(new StyleSpan(Typeface.BOLD), 0, partDestacada.length() - 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         textView.setText(spannableString);
         int tamanyText = widthDisplay/70;
         textView.setTextSize(tamanyText);
-        textView.setMovementMethod(new ScrollingMovementMethod());
+        textView.setMovementMethod(new ScrollingMovementMethod()); // scroll
         // Posicionam el textview
         int x = MARGE;
         int y = heightDisplay*5/8;

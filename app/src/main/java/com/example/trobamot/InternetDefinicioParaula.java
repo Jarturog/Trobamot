@@ -7,17 +7,30 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+/**
+ * Classe auxiliar per tenir més ordenat el projecte.
+ * Encarregada de donada una paraula retornar la seva definició
+ * @author Juan Arturo Abaurrea Calafell i Marta González Juan
+ */
 public class InternetDefinicioParaula {
 
-    private String paraula;
+    private String paraula; // paraula de la qual es vol saber la seva definició
 
+    /**
+     * Constructor on només es passa la paraula
+     * @param paraula paraula de la qual es vol saber la seva definició
+     */
     public InternetDefinicioParaula(String paraula) {
         this.paraula = paraula;
     }
 
+    /**
+     * Es connecta a Internet i agafa la definició en brut.
+     * @return definició en brut de la paraula.
+     */
     private String agafaHTML() {
         try {
-            URL definicio = new URL("https://www.vilaweb.cat/paraulogic/?diec="+ paraula);
+            URL definicio = new URL("https://www.vilaweb.cat/paraulogic/?diec=" + paraula); // web de la definició
             BufferedReader in = new BufferedReader(new InputStreamReader(definicio.openStream()));
             StringBuffer sb = new StringBuffer();
             String line = in.readLine();
@@ -31,8 +44,12 @@ public class InternetDefinicioParaula {
         }
     }
 
+    /**
+     * Mitjançant un fil aconsegueix la definició d'Internet i la passa a net per poder ser utilitzada fàcilment.
+     * @return definició de la paraula.
+     */
     public String getDefinicio() {
-        String def [] = new String[1];
+        String def [] = new String[1]; // s'emmagatzemarà la definició aquí
         Thread thread = new Thread(() -> {
             String json = agafaHTML();
             if (json == null || json == "") {
@@ -48,11 +65,11 @@ public class InternetDefinicioParaula {
         });
         thread.start();
         try {
-            thread.join();
+            thread.join(); // s'executa el codi que agafa la definició
         } catch (InterruptedException e) {
             def[0] = null;
         }
-        if (def[0] == null || def[0] == "") {
+        if (def[0] == null || def[0] == "") { // si no té definició
             def[0] = "No té definició";
         }
         return def[0];
