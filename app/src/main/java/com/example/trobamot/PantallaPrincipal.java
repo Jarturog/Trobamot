@@ -38,7 +38,7 @@ public class PantallaPrincipal {
     private final int widthDisplay, heightDisplay; // dimensions del dispositiu
     private TextView textViewSolucions; // mostra el nombre de solucions que queden
     // lengthWord és el nombre de lletres que tindrà la paraula i maxTry el nombre d'intents que té per esbrinar-la
-    private static int lengthWord = 5, maxTry = 6;
+    private static int lengthWord = 5, maxTry = 2;
     // colors i l'alfabet a emprar. Si es vol altre ordre de lletres al teclat es pot canviar l'ordre de lletres de l'alfabet
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
              greenColor = "#38761D", blackColor = "#000000", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -87,7 +87,14 @@ public class PantallaPrincipal {
                     lletra = linia.charAt(0);
                 }
                 if (lletra == ';' && paraulaAmbAccents.length() == lengthWord) { // si és de la longitud adequada
-                    String paraulaSenseAccents = linia.substring(1);
+                    char[] caracters = linia.substring(1).toCharArray();
+                    // com el diccionari substitueix la ç per la c a la versió sense accents l'afegeixo de nou
+                    for (int i = 0; i < caracters.length; i++) {
+                        if (paraulaAmbAccents.charAt(i) == 'ç') {
+                            caracters[i] = 'ç';
+                        }
+                    }
+                    String paraulaSenseAccents = new String(caracters);
                     diccionariComplet.put(paraulaSenseAccents, paraulaAmbAccents); // s'afegeixen les paraules
                     diccionariSolucions.add(paraulaSenseAccents);
                     solucions++; // s'incrementa
@@ -333,7 +340,7 @@ public class PantallaPrincipal {
      * @return instància de classe Intent per enviar-lo a la pantalla final
      */
     private Intent prepararSeguentPantalla(boolean guanyat) {
-        String paraula = null;
+        String paraula = "";
         for (int i = 0; i < lengthWord; i++) {
             paraula += paraulaPerEsbrinar.get(i); // es torna la paraula en String
         }

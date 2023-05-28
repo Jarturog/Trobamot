@@ -3,6 +3,7 @@ package com.example.trobamot;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Html;
@@ -47,6 +48,7 @@ public class PantallaFinal extends AppCompatActivity {
         crearTextDefinicio();
         if (!guanyat) {
             // S'estableix el fons gris i s'informa de les restriccions i les paraules possibles
+            constraintLayout.setBackgroundColor(Color.parseColor("#DAE1E7"));
             getWindow().getDecorView().setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
             crearTextRestriccions();
             crearTextParaulesPossibles();
@@ -77,7 +79,7 @@ public class PantallaFinal extends AppCompatActivity {
         titol.setY(heightDisplay/20);
         paraula.setX((widthDisplay/2)-tamanyTextParaula*paraula.getText().length()/2);
         paraula.setY(heightDisplay/7);
-        titol.setTypeface(Typeface.DEFAULT_BOLD);
+        titol.setTypeface(Typeface.DEFAULT_BOLD); // en negreta
         constraintLayout.addView(titol);
         constraintLayout.addView(paraula);
     }
@@ -97,11 +99,11 @@ public class PantallaFinal extends AppCompatActivity {
         textView.setMovementMethod(new ScrollingMovementMethod()); // scroll
         // Posicionam el textview
         int x = MARGE;
-        int y = heightDisplay/5;
+        int y = heightDisplay/3;
         textView.setX(x);
         textView.setY(y);
         textView.setWidth(widthDisplay - MARGE * 2);
-        textView.setHeight(heightDisplay * 3/4);
+        textView.setHeight(heightDisplay * 2/9 - MARGE * 2);
         constraintLayout.addView(textView);
     }
 
@@ -121,11 +123,11 @@ public class PantallaFinal extends AppCompatActivity {
         textView.setMovementMethod(new ScrollingMovementMethod()); // scroll
         // Posicionam el textview
         int x = MARGE;
-        int y = heightDisplay/2;
+        int y = heightDisplay*5/9;
         textView.setX(x);
         textView.setY(y);
         textView.setWidth(widthDisplay - MARGE * 2);
-        textView.setHeight(heightDisplay * 3/4);
+        textView.setHeight(heightDisplay * 2/9 - MARGE * 2);
         constraintLayout.addView(textView);
     }
 
@@ -145,11 +147,11 @@ public class PantallaFinal extends AppCompatActivity {
         textView.setMovementMethod(new ScrollingMovementMethod()); // scroll
         // Posicionam el textview
         int x = MARGE;
-        int y = heightDisplay*5/8;
+        int y = heightDisplay*7/9;
         textView.setX(x);
         textView.setY(y);
         textView.setWidth(widthDisplay - MARGE * 2);
-        textView.setHeight(heightDisplay * 3/4);
+        textView.setHeight(heightDisplay * 2/9 - heightDisplay/10);
         constraintLayout.addView(textView);
     }
 }
