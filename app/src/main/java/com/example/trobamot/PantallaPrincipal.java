@@ -38,7 +38,7 @@ public class PantallaPrincipal {
     private final int widthDisplay, heightDisplay; // dimensions del dispositiu
     private TextView textViewSolucions; // mostra el nombre de solucions que queden
     // lengthWord és el nombre de lletres que tindrà la paraula i maxTry el nombre d'intents que té per esbrinar-la
-    private static int lengthWord = 5, maxTry = 2;
+    private static int lengthWord = 5, maxTry = 6; // perquè no se superposin TextView's el maxTry ha de ser menor que 8
     // colors i l'alfabet a emprar. Si es vol altre ordre de lletres al teclat es pot canviar l'ordre de lletres de l'alfabet
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
              greenColor = "#38761D", blackColor = "#000000", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
