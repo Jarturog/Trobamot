@@ -41,7 +41,7 @@ public class UnsortedArrayMapping<K, V extends Comparable<V>> {
     }
 
     public boolean put(K key, V valor) {
-        if (isFull() || get(key) != null) {
+        if (n >= valors.length || get(key) != null) {
             return false;
         }
         valors[n] = valor;
@@ -67,10 +67,6 @@ public class UnsortedArrayMapping<K, V extends Comparable<V>> {
 
     public boolean isEmpty() {
         return n <= 0;
-    }
-
-    private boolean isFull() {
-        return n >= valors.length;
     }
 
     public Iterator iterator(){ // retorna nova instància de l'iterador personalitzat de la classe
@@ -100,21 +96,6 @@ public class UnsortedArrayMapping<K, V extends Comparable<V>> {
         public Object next() {
             return new Pair(claus[i], valors[i++]); // es crea una instància Pair i s'incrementa i
         }
-    }
-
-    /**
-     * Retorna un array del mapping ordenat amb mergesort per valor.
-     * Cost: O(nlogn), que com en aquest cas n és molt petit (lengthWord) no hi ha problemes.
-     * @return array d'Object que en realitat són instàncies Pair ordenat per valor.
-     * S'ha de fer casting de cada element.
-     */
-    public Object[] sorted() {
-        ArrayList<Pair> a = new ArrayList<>(n); // s'empra un ArrayList perquè implementa un mètode sort() que facilita tot
-        for (int i = 0; i < n; i++) { // es fa un recorregut del mapping
-            a.add(new Pair(claus[i], valors[i])); // s'afegeix nova instància Pair
-        }
-        a.sort(Comparator.comparing((Pair p) -> p.valor)); // s'ordena per valor
-        return a.toArray(); // es retorna l'array
     }
 }
 
