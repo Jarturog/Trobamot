@@ -24,7 +24,7 @@ public class Casella extends androidx.appcompat.widget.AppCompatTextView {
      * @param gd pinzell de la casella
      * @param textViewSize tamany de la casella
      */
-    public Casella(Context context, int fila, int columna, GradientDrawable gd, int textViewSize) {
+    public Casella(AppCompatActivity context, int fila, int columna, GradientDrawable gd, int textViewSize) {
         super(context);
         int espaiOcupat = textViewSize;
         textViewSize -= OFFSET; // per deixar espai entre caselles
@@ -34,8 +34,8 @@ public class Casella extends androidx.appcompat.widget.AppCompatTextView {
         setWidth(textViewSize);
         setHeight(textViewSize);
         // Posicionam la casella
-        setX(espaiOcupat + columna * (espaiOcupat));
-        setY(espaiOcupat + fila * (espaiOcupat));
+        setX(espaiOcupat + columna * espaiOcupat);
+        setY(espaiOcupat + fila * espaiOcupat + MainActivity.getStatusBarHeight(context));
         setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
         setTextColor(Color.BLACK);
         setTextSize(textViewSize / 5);
@@ -52,12 +52,14 @@ public class Casella extends androidx.appcompat.widget.AppCompatTextView {
     }
 
     /**
+     * Utiliza la longitud de la palabra predeterminada para calcular la ID. En caso de que lengthword
+     * sea mucho mayor a la predeterminada puede dar problemas.
      * @param fila fila on està la casella començant des de 0
      * @param columna columna on està la casella començant des de 0
      * @return l'ID de la casella a la posició indicada
      */
     private static int getIdCasella(int fila, int columna) {
-        return BEGIN_IDs_CASELLES + columna + fila * PantallaPrincipal.getLongitudParaula();
+        return BEGIN_IDs_CASELLES + columna + fila * PantallaPrincipal.lengthword;
     }
 
     /**

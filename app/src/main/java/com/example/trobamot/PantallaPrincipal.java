@@ -3,6 +3,7 @@ package com.example.trobamot;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.widget.Button;
 import android.widget.TextView;
@@ -22,10 +23,8 @@ import java.util.TreeSet;
  * Pantalla principal on es juga.
  * @author Juan Arturo Abaurrea Calafell i Marta González Juan
  */
-public class PantallaPrincipal {
-
-    // context on s'executa
-    private final AppCompatActivity context;
+public class PantallaPrincipal extends AppCompatActivity{
+    
     // mapping que no canvia de paraules amb lengthword lletres i les seves versions amb accents
     private HashMap<String, String> diccionariComplet;
     private HashSet<String> diccionariSolucions; // conjunt de solucions possibles dinàmic
@@ -35,32 +34,43 @@ public class PantallaPrincipal {
     private TreeSet<Character> pistesQuasiEncertades, restriccions;
     // intentActual itera sobre maxTry, lletraActual sobre lengthWord i solucions és el nombre de solucions possibles
     private int intentActual, lletraActual, solucions;
-    private final int widthDisplay, heightDisplay; // dimensions del dispositiu
+    private int widthDisplay, heightDisplay; // dimensions del dispositiu
+    private ConstraintLayout constraintLayout; // constraintLayout on s'afegiran els TextView's
     private TextView textViewSolucions; // mostra el nombre de solucions que queden
     // lengthWord és el nombre de lletres que tindrà la paraula i maxTry el nombre d'intents que té per esbrinar-la
-    private static int lengthWord = 5, maxTry = 6; // perquè no se superposin TextView's el maxTry ha de ser menor que 8
+    private int lengthWord, maxTry; // perquè no se superposin TextView's el maxTry ha de ser menor que 8
     // colors i l'alfabet a emprar. Si es vol altre ordre de lletres al teclat es pot canviar l'ordre de lletres de l'alfabet
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
-             greenColor = "#38761D", blackColor = "#000000", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
-
+             greenColor = "#38761D", blackColor = "#000000", whiteColor = "#FFFFFF",
+             ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final int DEFAULT_LENGTHWORD = 5, DEFAULT_MAXTRY = 6;
+    public static int lengthword;
     /**
      * Constructor que inicialitza una nova partida
-     * @param context el context on s'executa
      */
-    public PantallaPrincipal(AppCompatActivity context){
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pantalla_principal);
+        constraintLayout = findViewById(R.id.layoutPrincipal);
+        constraintLayout.setBackgroundColor(Color.parseColor(whiteColor));
         DisplayMetrics metrics = new DisplayMetrics(); // Object to store display information
-        context.getWindowManager().getDefaultDisplay().getMetrics(metrics); // Get display information
+        getWindowManager().getDefaultDisplay().getMetrics(metrics); // Get display information
         widthDisplay = metrics.widthPixels; // se assignen els valors per emprar-los després
         heightDisplay = metrics.heightPixels;
-        this.context = context;
+        Intent intent = getIntent();
+        lengthWord = intent.getIntExtra(MainActivity.MESSAGE_LENGTHWORD, DEFAULT_LENGTHWORD);
+        maxTry = intent.getIntExtra(MainActivity.MESSAGE_MAXTRY, DEFAULT_MAXTRY);
+        lengthword = lengthWord;
         lletraActual = 0; // inicialització de valors
         intentActual = 0;
+        MainActivity.hideSystemUI(this, false, false);
         int nombreParaules = inicialitzarDiccionari(); // s'inicialitza el diccionari
         crearParaula(nombreParaules); // paraula que està entre la posició 0 i nombreParaules del diccionari amb paraules amb lengthword lletres
         // en cas de que hagi superposició de ID's es decrementa el maxTry
         // això es deu a que cada tecla té com a ID el valor numèric de la seva lletra
         while (Casella.getBEGIN_IDs_CASELLES() + maxTry * lengthWord >= 'a') {
-            MainActivity.missatgeError(context, maxTry + " son massa intents, es decrementen.");
+            MainActivity.missatgeError(this, maxTry + " son massa intents, es decrementen.");
             maxTry--;
         }
         crearTeclat(); // creació del teclat i dels dos botons
@@ -76,7 +86,7 @@ public class PantallaPrincipal {
         try {
             diccionariComplet = new HashMap<>();
             diccionariSolucions = new HashSet<>();
-            BufferedReader br = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(R.raw.paraules)));
+            BufferedReader br = new BufferedReader(new InputStreamReader(getResources().openRawResource(Menu.getOpcion().diccionari)));
             String linia = br.readLine(); // es llegeix del fitxer diccionari
             while (linia != null && !linia.equals("")) { // mentre no final
                 String paraulaAmbAccents = "";
@@ -97,13 +107,15 @@ public class PantallaPrincipal {
                     String paraulaSenseAccents = new String(caracters);
                     diccionariComplet.put(paraulaSenseAccents, paraulaAmbAccents); // s'afegeixen les paraules
                     diccionariSolucions.add(paraulaSenseAccents);
-                    solucions++; // s'incrementa
+                    //solucions++; // s'incrementa
                 }
                 linia = br.readLine(); // següent paraula
             }
+            // este código cuenta 2 palabras con las mismas letras como iguales, aunque una tenga tildes y otra no
+            solucions = diccionariSolucions.size();
             return solucions; // retorna les solucions
         } catch (IOException e) { // si excepció
-            MainActivity.missatgeError(context, "No s'ha pogut inicialitzar el diccionari");
+            MainActivity.missatgeError(this, "No s'ha pogut inicialitzar el diccionari");
             throw new RuntimeException("No s'ha pogut inicialitzar el diccionari");
         }
     }
@@ -137,16 +149,16 @@ public class PantallaPrincipal {
      * Crea el teclat i els dos botons
      */
     private void crearTeclat() {
-        ConstraintLayout constraintLayout = context.findViewById(R.id.layout);
         // FILES del teclat i el tamany del botó de la lletra en el teclat
         final int FILES = 3, TAMANY_LLETRA = widthDisplay/(ALFABET.length()/FILES);
         for (int fila = 0; fila < FILES; fila++) {
             for (int columna = 0; columna < ALFABET.length()/FILES; columna++) {
                 char lletra = ALFABET.charAt(fila * (ALFABET.length()/FILES) + columna); // s'agafa la lletra
-                Button button = new Button(context); // es crea el botó de la lletra
+                Button button = new Button(this); // es crea el botó de la lletra
                 button.setId(Character.toLowerCase(lletra)); // s'assigna l'ID
                 button.setText(lletra + ""); // s'assigna la lletra
-                button.setTextColor(Color.parseColor(blackColor)); // es posa de color negre
+                button.setTextColor(Color.parseColor(whiteColor)); // es posa de color negre
+                //button.setBackgroundColor(Color.parseColor(grayColor));
                 // Tamany dels botons
                 ConstraintLayout.LayoutParams paramsBoto = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
                 paramsBoto.height = TAMANY_LLETRA;
@@ -160,9 +172,9 @@ public class PantallaPrincipal {
             }
         }
         // Crear els botons
-        Button buttonEsborrar = new Button(context), buttonEnviar = new Button(context);
-        buttonEsborrar.setText("Esborrar");
-        buttonEnviar.setText("Enviar");
+        Button buttonEsborrar = new Button(this), buttonEnviar = new Button(this);
+        buttonEsborrar.setText(Menu.getOpcion().esborrarText);
+        buttonEnviar.setText(Menu.getOpcion().enviarText);
         // Tamany dels botons
         int buttonWidth = widthDisplay*3/8, buttonHeight = heightDisplay/10;
         ConstraintLayout.LayoutParams paramsBotoEnviar = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, ConstraintLayout.LayoutParams.WRAP_CONTENT);
@@ -191,30 +203,30 @@ public class PantallaPrincipal {
      * Crea el text que està entre els botons i la graella que informa de les solucions possibles
      */
     private void crearTextSolucions(){
-        textViewSolucions = new TextView(context); // es crea
-        textViewSolucions.setText("Hi ha "+solucions+" solucions possibles."); // es posa el text
+        textViewSolucions = new TextView(this); // es crea
+        textViewSolucions.setText(Menu.getOpcion().hihaText+" "+solucions+" "+Menu.getOpcion().solText+"."); // es posa el text
         int tamanyText = widthDisplay/50; // s'assigna el tamany
         textViewSolucions.setTextSize(tamanyText);
+        textViewSolucions.setTextColor(Color.parseColor(blackColor));
         // Posicionam el textview
         textViewSolucions.setX((widthDisplay/2)-tamanyText*textViewSolucions.getText().length()/2);
-        textViewSolucions.setY(((1+maxTry)*widthDisplay/(lengthWord+2))+(widthDisplay/(2*(lengthWord+2))));
-        ((ConstraintLayout)context.findViewById(R.id.layout)).addView(textViewSolucions); // l'afegim
+        textViewSolucions.setY(MainActivity.getStatusBarHeight(this) + ((1+maxTry)*widthDisplay/(lengthWord+2))+(widthDisplay/(2*(lengthWord+2))));
+        ((ConstraintLayout)findViewById(R.id.layoutPrincipal)).addView(textViewSolucions); // l'afegim
     }
 
     /**
      * Crea la graella on s'escriuen les lletres
      */
     private void crearGraella() {
-        ConstraintLayout constraintLayout = context.findViewById(R.id.layout);
         // es selecciona el pinzell, amb les caselles a gris, per això nouPunter = false
         GradientDrawable gd = getPinzell(false);
         for (int fila = 0; fila < maxTry; fila++) { // es crea la graella amb les caselles
             for (int columna = 0; columna < lengthWord; columna++) {
                 // Crear el TextView i afegir-lo al layout i es posa + 2 pels espais als bordes
-                constraintLayout.addView(new Casella(context, fila, columna, gd, widthDisplay/(lengthWord+2)));
+                constraintLayout.addView(new Casella(this, fila, columna, gd, widthDisplay/(lengthWord+2)));
             }
         }
-        Casella c = Casella.getCasella(context, 0, 0); // es selecciona la primera casella
+        Casella c = Casella.getCasella(this, 0, 0); // es selecciona la primera casella
         c.setBackground(getPinzell(true)); // i es posa de color taronja perquè és on es comença a escriure
     }
 
@@ -224,15 +236,15 @@ public class PantallaPrincipal {
      */
     private void escriureLletra(char lletra){
         if (lletraActual >= lengthWord){ // si no hi ha més espais per escriure sense enviar
-            MainActivity.missatgeError(context, "Envia per provar altres lletres!");
+            MainActivity.missatgeError(this, "Envia per provar altres lletres!");
             return;
         }
-        Casella casella = Casella.getCasella(context, intentActual, lletraActual);
+        Casella casella = Casella.getCasella(this, intentActual, lletraActual);
         casella.setText(lletra + ""); // s'escriu la lletra
         casella.setBackground(getPinzell(false)); // es lleva el punter
         lletraActual++; // lletra escrita
         if (!(lletraActual >= lengthWord && intentActual >= maxTry-1)){ // si és la darrera casella no pinto de taronja la següent
-            casella = Casella.getCasella(context, intentActual, lletraActual);
+            casella = Casella.getCasella(this, intentActual, lletraActual);
             casella.setBackground(getPinzell(true)); // es posa el punter a la nova casella
         }
     }
@@ -242,16 +254,16 @@ public class PantallaPrincipal {
      */
     private void llevarLletra(){
         if (lletraActual <= 0){ // si no hi ha lletres
-            MainActivity.missatgeError(context, "No es pot esborrar lletres si no n'hi ha!");
+            MainActivity.missatgeError(this, "No es pot esborrar lletres si no n'hi ha!");
             return;
         }
         Casella casella;
         if (!(lletraActual >= lengthWord && intentActual >= maxTry-1)){ // si és la darrera casilla no pinto de gris la següent
-            casella = Casella.getCasella(context, intentActual, lletraActual);
+            casella = Casella.getCasella(this, intentActual, lletraActual);
             casella.setBackground(getPinzell(false));
         }
         lletraActual--; // lletra esborrada
-        casella = Casella.getCasella(context, intentActual, lletraActual);
+        casella = Casella.getCasella(this, intentActual, lletraActual);
         casella.setText(""); // es deixa buida la casella
         casella.setBackground(getPinzell(true)); // es pinta de taronja
     }
@@ -274,33 +286,33 @@ public class PantallaPrincipal {
     private void comprovarParaula(){
         String paraulaEscrita = "", paraulaCorrecta = "";
         for (int i = 0; i < lengthWord; i++) {
-            paraulaEscrita += Casella.getCasella(context, intentActual, i);
+            paraulaEscrita += Casella.getCasella(this, intentActual, i);
         }
         for (int i = 0; i < lengthWord; i++) {
             paraulaCorrecta += paraulaPerEsbrinar.get(i);
         }
         paraulaEscrita = paraulaEscrita.toLowerCase(); // es passa a minúscules
         if (lletraActual < lengthWord){ // si paraula incompleta
-            MainActivity.missatgeError(context, "Paraula incompleta!");
+            MainActivity.missatgeError(this, "Paraula incompleta!");
             return;
         } else if (paraulaEscrita.compareToIgnoreCase(paraulaCorrecta) == 0){ // si l'ha esbrinat
-            context.startActivity(prepararSeguentPantalla(true)); // ha guanyat
+            startActivity(prepararSeguentPantalla(true)); // ha guanyat
             return;
         } else if (!diccionariComplet.containsKey(paraulaEscrita)){ // es comprova si forma part del catàleg
-            MainActivity.missatgeError(context, "Paraula no vàlida!");
+            MainActivity.missatgeError(this, "Paraula no vàlida!");
             return;
         } else if (intentActual >= maxTry-1){ // si no té més oportunitats
-            context.startActivity(prepararSeguentPantalla(false)); // ha perdut
+            startActivity(prepararSeguentPantalla(false)); // ha perdut
             return;
         }
         // en cas de que arribi aquí es processa les paraules per aconseguir pistes i restriccions i es passa al següent intent
         for (int i = 0; i < paraulaEscrita.length(); i++) { // recòrrer la paraula escrita
             char lletraParaulaEscrita = paraulaEscrita.charAt(i); // lletra escrita que s'està tractant
             char lletraParaulaEsbrinar = Character.toLowerCase(paraulaPerEsbrinar.get(i)); // lletra correcta que s'està tractant
-            Casella c = Casella.getCasella(context, intentActual, i); // casella que s'està tractant
-            Button tecla = context.findViewById(lletraParaulaEscrita); // tecla que s'està tractant
+            Casella c = Casella.getCasella(this, intentActual, i); // casella que s'està tractant
+            Button tecla = findViewById(lletraParaulaEscrita); // tecla que s'està tractant
             // si la tecla no s'ha coloretjat teclaPintada = false
-            boolean teclaPintada = tecla.getCurrentTextColor() != Color.parseColor(blackColor);
+            boolean teclaPintada = tecla.getCurrentTextColor() != Color.parseColor(whiteColor);
             if (lletraParaulaEsbrinar == lletraParaulaEscrita) { // si coincideix lletra
                 c.setBackgroundColor(Color.parseColor(greenColor)); // casella verd
                 tecla.setTextColor(Color.parseColor(greenColor)); // tecla verd
@@ -344,7 +356,7 @@ public class PantallaPrincipal {
         for (int i = 0; i < lengthWord; i++) {
             paraula += paraulaPerEsbrinar.get(i); // es torna la paraula en String
         }
-        Intent intent = new Intent(context, PantallaFinal.class); // es crea l'intent
+        Intent intent = new Intent(this, PantallaFinal.class); // es crea l'intent
         intent.putExtra(MainActivity.MESSAGE_GUANYAT, guanyat); // s'envia si ha guanyat o no
         intent.putExtra(MainActivity.MESSAGE_PARAULA, diccionariComplet.get(paraula)); // s'envia la paraula ben escrita
         if (guanyat) { // si ha guanyat no fa falta enviar res més
@@ -401,7 +413,7 @@ public class PantallaPrincipal {
                 solucions--; // es resta del contador
             }
         }
-        textViewSolucions.setText("Hi ha "+solucions+" solucions possibles."); // s'actualitza el TextView
+        textViewSolucions.setText(Menu.getOpcion().hihaText+" "+solucions+" "+Menu.getOpcion().solText+"."); // s'actualitza el TextView
     }
 
     /**
@@ -450,13 +462,4 @@ public class PantallaPrincipal {
         }
         return true; // si cumpleix les pistes i no té les restriccions és una possible solució
     }
-
-    /**
-     * Emprat per calcular l'índex de la casella a la classe Casella
-     * @return la longitud de la paraula
-     */
-    public static int getLongitudParaula(){
-        return lengthWord;
-    }
-
 }

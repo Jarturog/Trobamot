@@ -30,7 +30,7 @@ public class InternetDefinicioParaula {
      */
     private String agafaHTML() {
         try {
-            URL definicio = new URL("https://www.vilaweb.cat/paraulogic/?diec=" + paraula); // web de la definició
+            URL definicio = new URL(Menu.getOpcion().link + paraula); // web de la definició
             BufferedReader in = new BufferedReader(new InputStreamReader(definicio.openStream()));
             StringBuffer sb = new StringBuffer();
             String line = in.readLine();
