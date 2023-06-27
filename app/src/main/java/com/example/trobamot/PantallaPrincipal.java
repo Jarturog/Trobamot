@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Random;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 /**
  * Pantalla principal on es juga.
@@ -29,19 +29,22 @@ public class PantallaPrincipal {
     // mapping que no canvia de paraules amb lengthword lletres i les seves versions amb accents
     private HashMap<String, String> diccionariComplet;
     private HashSet<String> diccionariSolucions; // conjunt de solucions possibles dinàmic
-    // mapping que relaciona posicions d'una paraula amb les seves lletres
-    private UnsortedArrayMapping<Integer, Character> paraulaPerEsbrinar, pistesEncertades;
-    // conjunts que emmagatzemen fets de la paraula que s'ha d'esbrinar
-    private TreeSet<Character> pistesQuasiEncertades, restriccions;
+    // mapping que relaciona les lletres i el tipus de restricció (positiu si encert, negatiu si altre)
+    private TreeMap<Character, Integer> restriccions;
+    // alfabet amb les posicions de les lletres de la paraula a esbrinar
+    private TreeMap<Character, HashSet<Integer>> alfabetAmbParaula;
+    // punter a HashSet buit de les restriccions que serveixen per a distingir-lo dels encerts
+    private final static HashSet<Integer> INICIALITZAT = new HashSet<>();
+    private final static int FALL = -1, PISTA = -2; // fall per a casella vermella, pista per a groga
     // intentActual itera sobre maxTry, lletraActual sobre lengthWord i solucions és el nombre de solucions possibles
     private int intentActual, lletraActual, solucions;
     private final int widthDisplay, heightDisplay; // dimensions del dispositiu
     private TextView textViewSolucions; // mostra el nombre de solucions que queden
     // lengthWord és el nombre de lletres que tindrà la paraula i maxTry el nombre d'intents que té per esbrinar-la
-    private static int lengthWord = 5, maxTry = 6; // perquè no se superposin TextView's el maxTry ha de ser menor que 8
+    private static int lengthWord = 5, maxTry = 3; // perquè no se superposin TextView's el maxTry ha de ser menor que 8
     // colors i l'alfabet a emprar. Si es vol altre ordre de lletres al teclat es pot canviar l'ordre de lletres de l'alfabet
     private final static String grayColor = "#D9E1E8", orangeColor = "#E69138", redColor = "#CC0000",
-             greenColor = "#38761D", blackColor = "#000000", ALFABET = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
+             greenColor = "#38761D", blackColor = "#000000";
 
     /**
      * Constructor que inicialitza una nova partida
@@ -55,15 +58,16 @@ public class PantallaPrincipal {
         this.context = context;
         lletraActual = 0; // inicialització de valors
         intentActual = 0;
+        String alfabet = "ABCÇDEFGHIJKLMNOPQRSTUVWXYZ";
         int nombreParaules = inicialitzarDiccionari(); // s'inicialitza el diccionari
-        crearParaula(nombreParaules); // paraula que està entre la posició 0 i nombreParaules del diccionari amb paraules amb lengthword lletres
+        crearParaula(alfabet, nombreParaules); // paraula que està entre la posició 0 i nombreParaules del diccionari amb paraules amb lengthword lletres
         // en cas de que hagi superposició de ID's es decrementa el maxTry
         // això es deu a que cada tecla té com a ID el valor numèric de la seva lletra
         while (Casella.getBEGIN_IDs_CASELLES() + maxTry * lengthWord >= 'a') {
             MainActivity.missatgeError(context, maxTry + " son massa intents, es decrementen.");
             maxTry--;
         }
-        crearTeclat(); // creació del teclat i dels dos botons
+        crearTeclat(alfabet); // creació del teclat i dels dos botons
         crearTextSolucions(); // creació del text que informa de la quantitat de solucions possibles
         crearGraella(); // crea la graella on s'escriuran
     }
@@ -94,10 +98,14 @@ public class PantallaPrincipal {
                             caracters[i] = 'ç';
                         }
                     }
+                    // el següent codi afegeix una paraula i si la seva versió sense accents és igual
+                    // a altra llavors substitueix l'anterior
                     String paraulaSenseAccents = new String(caracters);
                     diccionariComplet.put(paraulaSenseAccents, paraulaAmbAccents); // s'afegeixen les paraules
-                    diccionariSolucions.add(paraulaSenseAccents);
-                    solucions++; // s'incrementa
+                    boolean jaEstava = !diccionariSolucions.add(paraulaSenseAccents);
+                    if (!jaEstava) {
+                        solucions++; // s'incrementa
+                    }
                 }
                 linia = br.readLine(); // següent paraula
             }
@@ -112,7 +120,7 @@ public class PantallaPrincipal {
      * Selecciona aleatòriament una paraula del diccionari
      * @param nombreParaules nombre de paraules del diccionari
      */
-    private void crearParaula(int nombreParaules){
+    private void crearParaula(String alfabet, int nombreParaules){
         String paraula = null;
         Random r = new Random();
         int nombreIteracions = r.nextInt(nombreParaules); // posició aleatòria de la paraula del diccionari
@@ -124,25 +132,40 @@ public class PantallaPrincipal {
             iteracionsFetes++; // següent iteració
             paraula = element.getKey(); // agafo la paraula sense accents
         }
-        pistesEncertades = new UnsortedArrayMapping<>(lengthWord); // posicions relacionades amb les lletres que les ocupen
-        pistesQuasiEncertades = new TreeSet<>(); // pistes grogues, on se sap que estan però no la posició
-        restriccions = new TreeSet<>(); // pistes vermelles, on se sap que no estan
-        paraulaPerEsbrinar = new UnsortedArrayMapping<>(lengthWord); // posicions relacionades amb les lletres que les ocupen
-        for (int pos = 0; pos < lengthWord; pos++) { // s'inicialitza la paraula per esbrinar
-            paraulaPerEsbrinar.put(pos, paraula.charAt(pos)); // s'afegeixen les lletres a les posicions
+        restriccions = new TreeMap<>(); // restriccions verdes, grogues i vermelles
+        alfabetAmbParaula = new TreeMap<>(); // alfabet amb les posicions de les lletres de la paraula a esbrinar
+        // s'inicialitzen primer les lletres de la paraula a esbrinar amb les posicions de cada una
+        for (int pos = 0; pos < lengthWord; pos++) {
+            char lletra = Character.toLowerCase(paraula.charAt(pos));
+            HashSet<Integer> posicions = alfabetAmbParaula.get(lletra);
+            if (posicions == null) {
+                posicions = new HashSet<>();
+                posicions.add(pos);
+                alfabetAmbParaula.put(lletra, posicions);
+            } else {
+                posicions.add(pos);
+            }
+        }
+        // després s'inicialitzen la resta de les lletres
+        for (int pos = 0; pos < alfabet.length(); pos++) {
+            char lletra = Character.toLowerCase(alfabet.charAt(pos));
+            HashSet<Integer> posicions = alfabetAmbParaula.get(lletra);
+            if (posicions == null) { // si la lletra no s'havia inicialitzat abans
+                alfabetAmbParaula.put(lletra, INICIALITZAT); // s'inicialitza amb el HashSet buit INICIALITZAT
+            }
         }
     }
 
     /**
      * Crea el teclat i els dos botons
      */
-    private void crearTeclat() {
+    private void crearTeclat(String alfabet) {
         ConstraintLayout constraintLayout = context.findViewById(R.id.layout);
         // FILES del teclat i el tamany del botó de la lletra en el teclat
-        final int FILES = 3, TAMANY_LLETRA = widthDisplay/(ALFABET.length()/FILES);
+        final int FILES = 3, TAMANY_LLETRA = widthDisplay/(alfabet.length()/FILES);
         for (int fila = 0; fila < FILES; fila++) {
-            for (int columna = 0; columna < ALFABET.length()/FILES; columna++) {
-                char lletra = ALFABET.charAt(fila * (ALFABET.length()/FILES) + columna); // s'agafa la lletra
+            for (int columna = 0; columna < alfabet.length()/FILES; columna++) {
+                char lletra = alfabet.charAt(fila * (alfabet.length()/FILES) + columna); // s'agafa la lletra
                 Button button = new Button(context); // es crea el botó de la lletra
                 button.setId(Character.toLowerCase(lletra)); // s'assigna l'ID
                 button.setText(lletra + ""); // s'assigna la lletra
@@ -153,7 +176,7 @@ public class PantallaPrincipal {
                 paramsBoto.width = TAMANY_LLETRA;
                 button.setLayoutParams(paramsBoto);
                 // Posicionar els botons
-                button.setX(widthDisplay - ((ALFABET.length()/FILES)-columna) * TAMANY_LLETRA);
+                button.setX(widthDisplay - ((alfabet.length()/FILES)-columna) * TAMANY_LLETRA);
                 button.setY(heightDisplay - (FILES-fila) * TAMANY_LLETRA);
                 constraintLayout.addView(button); // Afegir el botó al layout
                 button.setOnClickListener(v -> escriureLletra(lletra)); // Afegir la funcionalitat al botó
@@ -269,21 +292,40 @@ public class PantallaPrincipal {
     }
 
     /**
+     * Decideix si la paraula és igual a la de l'alfabet
+     * @param paraula paraula de la que es vol saber la coincidència
+     * @return true si s'ha encertat
+     */
+    private boolean sonIguals(String paraula) {
+        Iterator<TreeMap.Entry<Character, HashSet<Integer>>> iteradorAlfabet = alfabetAmbParaula.entrySet().iterator(); // iterador
+        while (iteradorAlfabet.hasNext()) { // mentre no final
+            TreeMap.Entry<Character, HashSet<Integer>> element = iteradorAlfabet.next(); // següent element
+            char lletra = element.getKey();
+            HashSet<Integer> posicions = element.getValue();
+            Iterator<Integer> iteradorPosicions = posicions.iterator();
+            while (iteradorPosicions.hasNext()) {
+                int pos = iteradorPosicions.next();
+                if (lletra != paraula.charAt(pos)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Es comprova la paraula i es tracta. Si guanya o perd es passa a la pantalla final
      */
     private void comprovarParaula(){
-        String paraulaEscrita = "", paraulaCorrecta = "";
+        String paraulaEscrita = "";
         for (int i = 0; i < lengthWord; i++) {
             paraulaEscrita += Casella.getCasella(context, intentActual, i);
-        }
-        for (int i = 0; i < lengthWord; i++) {
-            paraulaCorrecta += paraulaPerEsbrinar.get(i);
         }
         paraulaEscrita = paraulaEscrita.toLowerCase(); // es passa a minúscules
         if (lletraActual < lengthWord){ // si paraula incompleta
             MainActivity.missatgeError(context, "Paraula incompleta!");
             return;
-        } else if (paraulaEscrita.compareToIgnoreCase(paraulaCorrecta) == 0){ // si l'ha esbrinat
+        } else if (sonIguals(paraulaEscrita)){ // si l'ha esbrinat
             context.startActivity(prepararSeguentPantalla(true)); // ha guanyat
             return;
         } else if (!diccionariComplet.containsKey(paraulaEscrita)){ // es comprova si forma part del catàleg
@@ -295,27 +337,25 @@ public class PantallaPrincipal {
         }
         // en cas de que arribi aquí es processa les paraules per aconseguir pistes i restriccions i es passa al següent intent
         for (int i = 0; i < paraulaEscrita.length(); i++) { // recòrrer la paraula escrita
-            char lletraParaulaEscrita = paraulaEscrita.charAt(i); // lletra escrita que s'està tractant
-            char lletraParaulaEsbrinar = Character.toLowerCase(paraulaPerEsbrinar.get(i)); // lletra correcta que s'està tractant
+            char lletra = paraulaEscrita.charAt(i); // lletra escrita que s'està tractant
+            HashSet<Integer> posicionsLletraResposta = alfabetAmbParaula.get(lletra);
             Casella c = Casella.getCasella(context, intentActual, i); // casella que s'està tractant
-            Button tecla = context.findViewById(lletraParaulaEscrita); // tecla que s'està tractant
+            Button tecla = context.findViewById(lletra); // tecla que s'està tractant
             // si la tecla no s'ha coloretjat teclaPintada = false
             boolean teclaPintada = tecla.getCurrentTextColor() != Color.parseColor(blackColor);
-            if (lletraParaulaEsbrinar == lletraParaulaEscrita) { // si coincideix lletra
+            if (posicionsLletraResposta.contains(i)) { // si coincideixen posicions
                 c.setBackgroundColor(Color.parseColor(greenColor)); // casella verd
                 tecla.setTextColor(Color.parseColor(greenColor)); // tecla verd
-                pistesEncertades.put(i, lletraParaulaEscrita); // s'afegeix l'encert
-                pistesQuasiEncertades.remove(lletraParaulaEscrita); // en cas de que estigués com a quasi encert es lleva
+                restriccions.put(lletra, i); // s'afegeix la posició on s'ha trobat
                 continue;
             }// en cas contrari
             boolean dinsParaula = false; // es suposa que la lletra escrita no està dins la paraula
             for (int pos = 0; pos < lengthWord; pos++) { // recòrrer paraulaPerEsbrinar
-                lletraParaulaEsbrinar = Character.toLowerCase(paraulaPerEsbrinar.get(pos)); // s'actualitza la lletra a tractar
-                if (lletraParaulaEsbrinar == lletraParaulaEscrita) { // si la lletra escrita està dins la paraula
+                if (posicionsLletraResposta.contains(pos)) { // si la lletra escrita està dins la paraula
                     c.setBackgroundColor(Color.parseColor(orangeColor)); // es posa com que està, taronja
                     if (!teclaPintada) { // si la tecla no ha estat pintada
                         tecla.setTextColor(Color.parseColor(orangeColor)); // es pinta
-                        pistesQuasiEncertades.add(lletraParaulaEscrita); // s'afegeix al conjunt de quasi encertades
+                        restriccions.put(lletra, PISTA); // s'afegeix que se sap que està però no on
                     }
                     dinsParaula = true; // s'ha trobat
                     break; // surt
@@ -325,7 +365,7 @@ public class PantallaPrincipal {
                 c.setBackgroundColor(Color.parseColor(redColor)); // casella vermella
                 if (!teclaPintada) { // si no estava pintada la tecla
                     tecla.setTextColor(Color.parseColor(redColor)); // es pinta de vermell
-                    restriccions.add(lletraParaulaEscrita); // s'afegeix
+                    restriccions.put(lletra, FALL); // s'afegeix que se sap que no està
                 }
             }
         }
@@ -340,32 +380,36 @@ public class PantallaPrincipal {
      * @return instància de classe Intent per enviar-lo a la pantalla final
      */
     private Intent prepararSeguentPantalla(boolean guanyat) {
-        String paraula = "";
-        for (int i = 0; i < lengthWord; i++) {
-            paraula += paraulaPerEsbrinar.get(i); // es torna la paraula en String
+        char [] paraula = new char[lengthWord];
+        Iterator<TreeMap.Entry<Character, HashSet<Integer>>> iteradorAlfabet = alfabetAmbParaula.entrySet().iterator(); // iterador
+        while (iteradorAlfabet.hasNext()) { // mentre no final
+            TreeMap.Entry<Character, HashSet<Integer>> element = iteradorAlfabet.next(); // següent element
+            char lletra = element.getKey();
+            Iterator<Integer> iteradorPosicions = element.getValue().iterator();
+            while (iteradorPosicions.hasNext()) {
+                paraula[iteradorPosicions.next()] = lletra;
+            }
         }
         Intent intent = new Intent(context, PantallaFinal.class); // es crea l'intent
         intent.putExtra(MainActivity.MESSAGE_GUANYAT, guanyat); // s'envia si ha guanyat o no
-        intent.putExtra(MainActivity.MESSAGE_PARAULA, diccionariComplet.get(paraula)); // s'envia la paraula ben escrita
+        intent.putExtra(MainActivity.MESSAGE_PARAULA, diccionariComplet.get(new String(paraula))); // s'envia la paraula ben escrita
         if (guanyat) { // si ha guanyat no fa falta enviar res més
             return intent; // retorna l'intent
         } // si ha perdut cal enviar les pistes i restriccions
-        // ENCERTS
-        String sRestriccions = "";
-        Object[] pistesEncertadesOrdenades = pistesEncertades.sorted(); // s'ordenen els encerts alfabèticament
-        for (int i = 0; i < pistesEncertadesOrdenades.length; i++) { // es passa a String
-            UnsortedArrayMapping.Pair element = (UnsortedArrayMapping.Pair)pistesEncertadesOrdenades[i]; // casting
-            sRestriccions += "ha de contenir la " + Character.toUpperCase((Character)element.getValue()) + " a la posició " + (((Integer)element.getKey())+1) + ", ";
-        }
-        // PISTES
-        Iterator<Character> iterador = pistesQuasiEncertades.iterator(); // iterador
-        while (iterador.hasNext()) { // mentre quedin pistes es passen a String i s'afegeixen al text
-            sRestriccions += "ha de contenir la " + Character.toUpperCase(iterador.next()) + " a qualque posició no descoberta, ";
-        }
         // RESTRICCIONS
-        iterador = restriccions.iterator(); // iterador
+        String sRestriccions = "";
+        Iterator<TreeMap.Entry<Character, Integer>> iterador = restriccions.entrySet().iterator(); // iterador
         while (iterador.hasNext()) { // mentre quedin restriccions es passen a String i s'afegeixen al text
-            sRestriccions += "no ha de contenir la " + Character.toUpperCase(iterador.next()) + ", ";
+            TreeMap.Entry<Character, Integer> element = iterador.next(); // següent element
+            char lletra = Character.toUpperCase(element.getKey());
+            int pos = element.getValue();
+            if (pos >= 0) {
+                sRestriccions += "ha de contenir la " +  lletra + " a la posició " + (pos + 1) + ", ";
+            } else if (pos == PISTA) {
+                sRestriccions += "ha de contenir la " + lletra + " a qualque posició no descoberta, ";
+            } else if (pos == FALL) {
+                sRestriccions += "no ha de contenir la " + lletra + ", ";
+            } // no hi ha else
         }
         if (sRestriccions.length() > 1) { // si no està buit es lleven el ", " finals i es posa un punt
             sRestriccions = sRestriccions.substring(0, sRestriccions.length() - 2) + ".";
@@ -411,42 +455,24 @@ public class PantallaPrincipal {
      * @return true si és una possible solució, fals en cas contrari.
      */
     private boolean possibleSolucio(String paraula) {
-        Iterator<UnsortedArrayMapping.Pair> iteradorMapping = pistesEncertades.iterator(); // iterador del mapping
-        while (iteradorMapping.hasNext()) { // mentres quedin encerts
-            UnsortedArrayMapping.Pair element = iteradorMapping.next(); // següent encert
-            int posicioLletra = (int) element.getKey(); // s'agafa la posició de la lletra
-            // si les lletres a la mateixa posició no coincideixen
-            if (!pistesEncertades.get(posicioLletra).equals(paraula.charAt(posicioLletra))) {
-                return false; // no pot ser una solució
-            }
-        }
-        Iterator<Character> iterador = pistesQuasiEncertades.iterator(); // iterador pistes grogues
-        while (iterador.hasNext()) { // mentre quedin pistes
-            char lletra = iterador.next(); // s'agafa la pista, que és una lletra que ha d'estar a la paraula
-            boolean trobat = false; // no s'ha trobat encara
-            for (int i = 0; i < paraula.length(); i++) { // es cerca fent un recorregut
-                if (lletra == paraula.charAt(i)) { // si l'ha trobat
-                    trobat = true;
-                    break; // surt
+        Iterator<TreeMap.Entry<Character, Integer>> iterador = restriccions.entrySet().iterator(); // iterador
+        while (iterador.hasNext()) { // mentre quedin restriccions es fan comprovacions
+            TreeMap.Entry<Character, Integer> element = iterador.next(); // següent element
+            char lletra = Character.toLowerCase(element.getKey());
+            int pos = element.getValue();
+            if (pos == PISTA) {
+                boolean trobat = false;
+                for (int i = 0; i < paraula.length() && !trobat; i++) {
+                    if (paraula.charAt(i) == lletra) trobat = true;
                 }
-            }
-            if (!trobat) { // si surt del bucle i no ha trobat la lletra
-                return false; // com no s'ha trobat la pista no pot ser una solució
-            }
-        }
-        iterador = restriccions.iterator(); // iterador restriccions vermelles
-        while (iterador.hasNext()) { // mentre quedin restriccions
-            char lletra = iterador.next(); // s'agafa la restricció, que és una lletra que no ha d'estar a la paraula
-            boolean trobat = false;
-            for (int i = 0; i < paraula.length(); i++) { // es fa un recorregut com abans
-                if (lletra == paraula.charAt(i)) { // si l'ha trobat
-                    trobat = true;
-                    break; // surt
+                if (!trobat) return false;
+            } else if (pos == FALL) {
+                for (int i = 0; i < paraula.length(); i++) {
+                    if (paraula.charAt(i) == lletra) return false;
                 }
-            }
-            if (trobat) { // si ha trobat la lletra que no hauria d'haver trobat
-                return false; // no és una possible solució
-            }
+            } else if (pos >= 0 && paraula.charAt(pos) != lletra) {
+                return false;
+            } // no hi ha else
         }
         return true; // si cumpleix les pistes i no té les restriccions és una possible solució
     }
